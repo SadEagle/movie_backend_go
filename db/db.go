@@ -32,10 +32,15 @@ var schema = `
 
 	CREATE TABLE IF NOT EXISTS movie(
 	id UUID PRIMARY KEY,
-	title VARCHAR NOT NULL,
+	title VARCHAR NOT NULL UNIQUE,
 	amount_marks INTEGER NOT NULL DEFAULT 0,
 	total_mark INTEGER NOT NULL DEFAULT 0,
-	rating REAL GENERATED ALWAYS AS (total_mark::REAL / NULLIF(amount_marks, 0)) STORED,
+	rating REAL GENERATED ALWAYS AS (
+		CASE
+			WHEN amount_marks = 0 THEN -1
+			ELSE total_mark / amount_marks
+		END
+		) STORED,
 	created_at TIMESTAMP DEFAULT NOW()
 	);
 

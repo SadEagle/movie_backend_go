@@ -1,4 +1,9 @@
 definitions:
+  models.CreateMovieRequest:
+    properties:
+      title:
+        type: string
+    type: object
   models.CreateUserDataRequest:
     properties:
       login:
@@ -6,6 +11,34 @@ definitions:
       name:
         type: string
       password:
+        type: string
+    type: object
+  models.FavoriteMovieListResponse:
+    properties:
+      movie_list:
+        items:
+          $ref: '#/definitions/models.FavoriteMovieResponse'
+        type: array
+    type: object
+  models.FavoriteMovieResponse:
+    properties:
+      movie_id:
+        type: string
+    type: object
+  models.MovieResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      rating:
+        type: number
+      title:
+        type: string
+    type: object
+  models.UpdateMovieRequest:
+    properties:
+      title:
         type: string
     type: object
   models.UpdateUserDataRequest:
@@ -39,6 +72,154 @@ info:
   title: movie_backend_go
   version: "1.0"
 paths:
+  /movie:
+    post:
+      consumes:
+      - application/json
+      description: Create movie
+      parameters:
+      - description: Movie creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateMovieRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.MovieResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create movie
+      tags:
+      - movie
+  /movie/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/models.MovieResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      tags:
+      - movie
+    get:
+      consumes:
+      - application/json
+      description: Get movie by id
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MovieResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Show movie
+      tags:
+      - movie
+    patch:
+      consumes:
+      - application/json
+      description: Update movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Movie creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateMovieRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MovieResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update movie
+      tags:
+      - movie
   /user:
     post:
       consumes:
@@ -187,35 +368,29 @@ paths:
       summary: Update user
       tags:
       - user
-    put:
+  /user/{user_id}/{movie_id}:
+    delete:
       consumes:
       - application/json
-      description: Update user
+      description: Delete favorite movie
       parameters:
       - description: User ID
         in: path
-        name: id
+        name: user_id
         required: true
         type: string
-      - description: User creation data
-        in: body
-        name: request
+      - description: Movie ID
+        in: path
+        name: movie_id
         required: true
-        schema:
-          $ref: '#/definitions/models.UpdateUserDataRequest'
+        type: string
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
           schema:
-            $ref: '#/definitions/models.UserDataResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.FavoriteMovieResponse'
         "404":
           description: Not Found
           schema:
@@ -228,7 +403,75 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Update user
       tags:
-      - user
+      - favorite_movie
+  /user/{user_id}/favorite_movie:
+    get:
+      consumes:
+      - application/json
+      description: Get user favorite_movie list
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FavoriteMovieListResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      tags:
+      - favorite_movie
+  /user/{user_id}/movie/{movie_id}:
+    post:
+      consumes:
+      - application/json
+      description: Add favorite movie
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FavoriteMovieResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      tags:
+      - favorite_movie
 swagger: "2.0"

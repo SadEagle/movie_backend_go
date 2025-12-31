@@ -31,9 +31,9 @@ type CreateUserDataRequest struct {
 }
 
 type UpdateUserDataRequest struct {
-	Name     *string `json:"name,omitempty"`
-	Login    *string `json:"login,omitempty"`
-	Password *string `json:"password,omitempty"`
+	Name     *string `json:"name"`
+	Login    *string `json:"login"`
+	Password *string `json:"password"`
 }
 
 // Response structs

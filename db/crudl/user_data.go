@@ -30,19 +30,18 @@ func UpdateUserDataDB(db *sql.DB, userUpdate models.UpdateUserDataRequest, id st
 	var updateScheme = ` UPDATE user_data SET `
 	updates := []string{}
 	if userUpdate.Login != nil {
-		updates = append(updates, fmt.Sprintf("login = %s", *userUpdate.Login))
+		updates = append(updates, fmt.Sprintf("login = '%s'", *userUpdate.Login))
 	}
 	if userUpdate.Name != nil {
-		updates = append(updates, fmt.Sprintf("name = %s", *userUpdate.Name))
+		updates = append(updates, fmt.Sprintf("name = '%s'", *userUpdate.Name))
 	}
 	if userUpdate.Login != nil {
-		updates = append(updates, fmt.Sprintf("password = %s", *userUpdate.Password))
+		updates = append(updates, fmt.Sprintf("password = '%s'", *userUpdate.Password))
 	}
 	updateString := strings.Join(updates, ", ")
 	updateScheme += updateString
 	updateScheme += fmt.Sprintf("\n WHERE id = '%s'", id)
-	updateScheme += fmt.Sprintf("\n RETURNING id, name, login, password, created_at")
-	fmt.Println(updateScheme)
+	updateScheme += "\n RETURNING id, name, login, password, created_at"
 
 	res := db.QueryRow(updateScheme)
 
@@ -80,12 +79,6 @@ func DeleteUserDB(db *sql.DB, id string) error {
 		return fmt.Errorf("deleting user: %w", err)
 	}
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("calculate affected rows by delete: %w", err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("0 rows were deleted")
-	}
-	return nil
+	return checkNonEmptyDeletion(res)
+
 }

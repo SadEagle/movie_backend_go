@@ -6,56 +6,58 @@ import (
 	"movie_backend_go/models"
 )
 
-func AddFavoriteMovieDB(db *sql.DB, favoriteMovieCreate models.AddFavoriteMovieRequest) (models.FavoriteMovie, error) {
+func AddFavoriteMovieDB(db *sql.DB, user_id string, movie_id string) (models.FavoriteMovie, error) {
+
 	var createShema = `
 		INSERT INTO favorite_movie(user_id, movie_id)
 		VALUES ($1, $2)
 		RETURNING user_id, movie_id
 		`
-	res := db.QueryRow(createShema, favoriteMovieCreate.UserID, favoriteMovieCreate.MovieID)
+	res_create := db.QueryRow(createShema, user_id, movie_id)
 
-	movie := models.FavoriteMovie{}
-	err := res.Scan(&favoriteMovieCreate.UserID, &favoriteMovieCreate.MovieID)
+	favoriteMovie := models.FavoriteMovie{}
+	err := res_create.Scan(&favoriteMovie.UserID, &favoriteMovie.MovieID)
 	if err != nil {
 		return models.FavoriteMovie{}, fmt.Errorf("scanning favorite_movie adding: %w", err)
 	}
-	return movie, nil
-}
-
-func GetFavoriteMovieListDB(db *sql.DB, user_id string) ([]string, error) {
-	var getSchema = `
-		SELECT array_agg(movie_id)
-		FROM favorite_movie
-		WHERE user_id = $1
-		GROUP_BY user_id
-		`
-	res := db.QueryRow(getSchema, user_id)
-
-	favoriteMovieIDList := []string{}
-	err := res.Scan(&favoriteMovieIDList)
-	if err != nil {
-		return []string{}, fmt.Errorf("scanning user's favorite movie_id list: %w", err)
-	}
-	return favoriteMovieIDList, nil
+	return favoriteMovie, nil
 }
 
 func DeleteFavoriteMovieDB(db *sql.DB, user_id string, movie_id string) error {
-	var deleteSchema = `
+	var createShema = `
 		DELETE FROM favorite_movie
-		WHERE user_id = $1
-		AND movie_id = $2
+		WHERE user_id = $1 AND movie_id = $2
 		`
-	res, err := db.Exec(deleteSchema, user_id, movie_id)
+	res, err := db.Exec(createShema, user_id, movie_id)
 	if err != nil {
-		return fmt.Errorf("deleting movie from user's favorite: %w", err)
+		return fmt.Errorf("delete favorite_movie: %w", err)
 	}
+	return checkNonEmptyDeletion(res)
+}
 
-	rowsAffected, err := res.RowsAffected()
+// Simplified version. Better option will be create non-response datatype and later convert to response one
+func GetFavoriteMovieListDB(db *sql.DB, user_id string) (models.FavoriteMovieList, error) {
+	var getListSchema = `
+		SELECT movie_id
+		FROM favorite_movie
+		WHERE user_id = $1
+		`
+	rows, err := db.Query(getListSchema, user_id)
 	if err != nil {
-		return fmt.Errorf("calculate affected rows by delete: %w", err)
+		return models.FavoriteMovieList{}, fmt.Errorf("get favorite_movie list for user: %w", err)
 	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("0 rows were deleted")
+	defer rows.Close()
+
+	favMovieList := models.FavoriteMovieList{}
+	for rows.Next() {
+		var favMovie models.FavoriteMovie
+		if err := rows.Scan(&favMovie); err != nil {
+			return models.FavoriteMovieList{}, fmt.Errorf("reading favorite movie list: %w", err)
+		}
+		favMovieList.FavMovieList = append(favMovieList.FavMovieList, favMovie)
 	}
-	return nil
+	if err := rows.Err(); err != nil {
+		return models.FavoriteMovieList{}, fmt.Errorf("check for errors from iteration over rows: %w", err)
+	}
+	return favMovieList, err
 }

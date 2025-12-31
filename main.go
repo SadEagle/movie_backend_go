@@ -47,14 +47,22 @@ func main() {
 	go ping_db_check()
 
 	mux := http.NewServeMux()
+
+	// user
 	mux.HandleFunc("GET /user/{id}", handlers.GetUserHandlerMake(db))
-	mux.HandleFunc("POST /user", handlers.CreateUserHandler(db))
-
-	updateHandler := handlers.UpdateUserHandler(db)
-	mux.HandleFunc("PATCH /user/{id}", updateHandler)
-	mux.HandleFunc("PUT /user/{id}", updateHandler)
+	mux.HandleFunc("POST /user", handlers.CreateUserHandlerMake(db))
+	updateUserHandler := handlers.UpdateUserHandlerMake(db)
+	mux.HandleFunc("PATCH /user/{id}", updateUserHandler)
 	mux.HandleFunc("DELETE /user/{id}", handlers.DeleteUserHandler(db))
-
+	// movie
+	mux.HandleFunc("GET /movie/{id}", handlers.GetMovieHandlerMake(db))
+	mux.HandleFunc("POST /movie", handlers.CreateMovieHandlerMake(db))
+	updateMovieHandler := handlers.UpdateMovieHandlerMake(db)
+	mux.HandleFunc("PATCH /movie/{id}", updateMovieHandler)
+	mux.HandleFunc("DELETE /movie/{id}", handlers.DeleteMovieHandlerMake(db))
+	// favorite_movie
+	mux.HandleFunc("POST /user/{user_id}/favorite_movie/{movie_id}", handlers.AddFavoriteMovieHandlerMake(db))
+	mux.HandleFunc("DELETE /user/{user_id}/favorite_movie/{movie_id}", handlers.DeleteFavoriteMovieHandlerMake(db))
 	// Swagger
 	mux.HandleFunc("GET /swagger/", httpSwagger.WrapHandler)
 

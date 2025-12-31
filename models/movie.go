@@ -24,6 +24,21 @@ func (m *Movie) ToResponse() MovieResponse {
 	}
 }
 
+type MovieList struct {
+	MovieList []Movie `json:"movie_list"`
+}
+
+func (ml *MovieList) ToResponse() MovieListResponse {
+	movieListResponse := []MovieResponse{}
+
+	for _, movie := range ml.MovieList {
+		movieListResponse = append(movieListResponse, movie.ToResponse())
+	}
+	return MovieListResponse{
+		MovieList: movieListResponse,
+	}
+}
+
 type CreateMovieRequest struct {
 	Title string `json:"title"`
 }
@@ -36,5 +51,9 @@ type MovieResponse struct {
 	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title"`
 	Rating    float32   `json:"rating"`
-	CreatedAt time.Time `db:"created_at"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type MovieListResponse struct {
+	MovieList []MovieResponse `json:"movie_list"`
 }
