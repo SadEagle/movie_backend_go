@@ -7,13 +7,8 @@ import (
 	"net/http"
 )
 
-type ResponseConvertable[ResponseT any] interface {
-	ToResponse() ResponseT
-}
-
-func writeResponseBody[ResponseT any](rw http.ResponseWriter, db_object ResponseConvertable[ResponseT], responseObjName string) {
-	responseFavMovie := db_object.ToResponse()
-	responseFavMovieByte, err := json.Marshal(responseFavMovie)
+func writeResponseBody[T any](rw http.ResponseWriter, responseByteObj T, responseObjName string) {
+	responseFavMovieByte, err := json.Marshal(responseByteObj)
 	if err != nil {
 		log.Println(err)
 		http.Error(rw, fmt.Sprintf("Can't convert %s data to response json", responseObjName), 500)

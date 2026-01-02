@@ -2,28 +2,11 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"movie_backend_go/db/crudl"
-	"movie_backend_go/models"
 	"net/http"
 )
-
-// func writeFavMovieResponseBody(rw http.ResponseWriter, favMovie models.FavoriteMovie) {
-// 	responseFavMovie := favMovie.ToResponse()
-// 	responseFavMovieByte, err := json.Marshal(responseFavMovie)
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(rw, "Can't convert favorite movie data to response json", 500)
-// 	}
-//
-// 	_, err = rw.Write(responseFavMovieByte)
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(rw, "Can't send favorite movie data", 500)
-// 	}
-// }
 
 // @Description  Get user favorite_movie list
 // @Tags         favorite_movie
@@ -43,7 +26,8 @@ func GetFavoriteMovieListHandlerMake(db *sql.DB) http.HandlerFunc {
 			http.Error(rw, fmt.Sprintf("Can't get favorite_movie list of user: %s", user_id), 404)
 			return
 		}
-		writeResponseBody(rw, favMovieList, "favorite_move")
+		favMovieListByte := favMovieList.ToResponse()
+		writeResponseBody(rw, favMovieListByte, "favorite_move")
 	}
 	return AddFavoriteMovieHandler
 }
@@ -57,7 +41,7 @@ func GetFavoriteMovieListHandlerMake(db *sql.DB) http.HandlerFunc {
 // @Success      200  {object}  models.FavoriteMovieResponse
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
-// @Router       /user/{user_id}/movie/{movie_id} [post]
+// @Router       /user/{user_id}/favorite_movie/{movie_id} [post]
 func AddFavoriteMovieHandlerMake(db *sql.DB) http.HandlerFunc {
 	AddFavoriteMovieHandler := func(rw http.ResponseWriter, r *http.Request) {
 		user_id := r.PathValue("user_id")
@@ -69,7 +53,8 @@ func AddFavoriteMovieHandlerMake(db *sql.DB) http.HandlerFunc {
 			return
 		}
 		rw.WriteHeader(201) // 201 - Create
-		writeFavMovieResponseBody(rw, favMovie)
+		favMovieByte := favMovie.ToResponse()
+		writeResponseBody(rw, favMovieByte, "favorite movie")
 	}
 	return AddFavoriteMovieHandler
 }
@@ -83,7 +68,7 @@ func AddFavoriteMovieHandlerMake(db *sql.DB) http.HandlerFunc {
 // @Success      204  {object}  models.FavoriteMovieResponse
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
-// @Router       /user/{user_id}/{movie_id} [delete]
+// @Router       /user/{user_id}/favorite_movie/{movie_id} [delete]
 func DeleteFavoriteMovieHandlerMake(db *sql.DB) http.HandlerFunc {
 	AddFavoriteMovieHandler := func(rw http.ResponseWriter, r *http.Request) {
 		user_id := r.PathValue("user_id")

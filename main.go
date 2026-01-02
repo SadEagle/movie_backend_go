@@ -49,9 +49,10 @@ func main() {
 	mux := http.NewServeMux()
 
 	// user
+	updateUserHandler := handlers.UpdateUserHandlerMake(db)
+
 	mux.HandleFunc("GET /user/{id}", handlers.GetUserHandlerMake(db))
 	mux.HandleFunc("POST /user", handlers.CreateUserHandlerMake(db))
-	updateUserHandler := handlers.UpdateUserHandlerMake(db)
 	mux.HandleFunc("PATCH /user/{id}", updateUserHandler)
 	mux.HandleFunc("DELETE /user/{id}", handlers.DeleteUserHandler(db))
 	// movie
@@ -61,6 +62,7 @@ func main() {
 	mux.HandleFunc("PATCH /movie/{id}", updateMovieHandler)
 	mux.HandleFunc("DELETE /movie/{id}", handlers.DeleteMovieHandlerMake(db))
 	// favorite_movie
+	mux.HandleFunc("GET /user/{user_id}/favorite_movie", handlers.GetFavoriteMovieListHandlerMake(db))
 	mux.HandleFunc("POST /user/{user_id}/favorite_movie/{movie_id}", handlers.AddFavoriteMovieHandlerMake(db))
 	mux.HandleFunc("DELETE /user/{user_id}/favorite_movie/{movie_id}", handlers.DeleteFavoriteMovieHandlerMake(db))
 	// Swagger

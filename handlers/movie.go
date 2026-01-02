@@ -12,21 +12,6 @@ import (
 	"net/http"
 )
 
-// func writeMovieResponseBody(rw http.ResponseWriter, movie models.Movie) {
-// 	response_movie := movie.ToResponse()
-// 	response_movie_byte, err := json.Marshal(response_movie)
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(rw, "Can't convert movie data to response json", 500)
-// 	}
-//
-// 	_, err = rw.Write(response_movie_byte)
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(rw, "Can't send movie data", 500)
-// 	}
-// }
-
 // @Summary      Show movie
 // @Description  Get movie by id
 // @Tags         movie
@@ -48,7 +33,8 @@ func GetMovieHandlerMake(db *sql.DB) http.HandlerFunc {
 		}
 
 		rw.Header().Set("Content-Type", "application/json")
-		writeMovieResponseBody(rw, movie)
+		movieByte := movie.ToResponse()
+		writeResponseBody(rw, movieByte, "movie")
 
 	}
 	return GetMovieHandler
@@ -88,7 +74,8 @@ func UpdateMovieHandlerMake(db *sql.DB) http.HandlerFunc {
 		}
 
 		rw.Header().Set("Content-Type", "application/json")
-		writeMovieResponseBody(rw, movie)
+		movieByte := movie.ToResponse()
+		writeResponseBody(rw, movieByte, "movie")
 	}
 	return UpdateMovieHandler
 }
@@ -126,7 +113,8 @@ func CreateMovieHandlerMake(db *sql.DB) http.HandlerFunc {
 
 		rw.WriteHeader(201) // 201 - Create
 		rw.Header().Set("Content-Type", "application/json")
-		writeMovieResponseBody(rw, movie)
+		movieByte := movie.ToResponse()
+		writeResponseBody(rw, movieByte, "movie")
 	}
 	return CreateMovieHandler
 }

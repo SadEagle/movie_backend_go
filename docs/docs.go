@@ -513,7 +513,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/{user_id}/movie/{movie_id}": {
+        "/user/{user_id}/favorite_movie/{movie_id}": {
             "post": {
                 "description": "Add favorite movie",
                 "consumes": [
@@ -567,9 +567,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/user/{user_id}/{movie_id}": {
+            },
             "delete": {
                 "description": "Delete favorite movie",
                 "consumes": [
@@ -671,7 +669,7 @@ const docTemplate = `{
         "models.MovieResponse": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {

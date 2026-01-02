@@ -38,7 +38,7 @@ func DeleteFavoriteMovieDB(db *sql.DB, user_id string, movie_id string) error {
 // Simplified version. Better option will be create non-response datatype and later convert to response one
 func GetFavoriteMovieListDB(db *sql.DB, user_id string) (models.FavoriteMovieList, error) {
 	var getListSchema = `
-		SELECT movie_id
+		SELECT user_id, movie_id
 		FROM favorite_movie
 		WHERE user_id = $1
 		`
@@ -51,7 +51,7 @@ func GetFavoriteMovieListDB(db *sql.DB, user_id string) (models.FavoriteMovieLis
 	favMovieList := models.FavoriteMovieList{}
 	for rows.Next() {
 		var favMovie models.FavoriteMovie
-		if err := rows.Scan(&favMovie); err != nil {
+		if err := rows.Scan(&favMovie.UserID, &favMovie.MovieID); err != nil {
 			return models.FavoriteMovieList{}, fmt.Errorf("reading favorite movie list: %w", err)
 		}
 		favMovieList.FavMovieList = append(favMovieList.FavMovieList, favMovie)

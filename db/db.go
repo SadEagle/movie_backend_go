@@ -45,8 +45,8 @@ var schema = `
 	);
 
 	CREATE TABLE IF NOT EXISTS favorite_movie(
-	user_id UUID REFERENCES user_data,
-	movie_id UUID REFERENCES movie,
+	user_id UUID REFERENCES user_data ON DELETE CASCADE,
+	movie_id UUID REFERENCES movie ON DELETE CASCADE,
 	PRIMARY KEY (user_id, movie_id)
 	);
 

@@ -27,7 +27,7 @@ definitions:
     type: object
   models.MovieResponse:
     properties:
-      createdAt:
+      created_at:
         type: string
       id:
         type: string
@@ -368,7 +368,39 @@ paths:
       summary: Update user
       tags:
       - user
-  /user/{user_id}/{movie_id}:
+  /user/{user_id}/favorite_movie:
+    get:
+      consumes:
+      - application/json
+      description: Get user favorite_movie list
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FavoriteMovieListResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      tags:
+      - favorite_movie
+  /user/{user_id}/favorite_movie/{movie_id}:
     delete:
       consumes:
       - application/json
@@ -405,39 +437,6 @@ paths:
             type: object
       tags:
       - favorite_movie
-  /user/{user_id}/favorite_movie:
-    get:
-      consumes:
-      - application/json
-      description: Get user favorite_movie list
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.FavoriteMovieListResponse'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      tags:
-      - favorite_movie
-  /user/{user_id}/movie/{movie_id}:
     post:
       consumes:
       - application/json

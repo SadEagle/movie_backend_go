@@ -12,23 +12,6 @@ import (
 	"net/http"
 )
 
-// TODO: check is it correct signature `rw` interface and not pointer-like... It's weird
-// func writeresponsebody(rw http.responsewriter, user models.userdata) {
-// 	responseUser := user.ToResponse()
-// 	responseUserByte, err := json.Marshal(responseUser)
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(rw, "Can't convert user data to response json", 500)
-// 	}
-//
-// 	rw.Header().Set("Content-Type", "application/json")
-// 	_, err = rw.Write(responseUserByte)
-// 	if err != nil {
-// 		log.Println(err)
-// 		http.Error(rw, "Can't send user data", 500)
-// 	}
-// }
-
 // @Summary      Show user
 // @Description  Get user by id
 // @Tags         user
@@ -48,7 +31,8 @@ func GetUserHandlerMake(db *sql.DB) http.HandlerFunc {
 			http.Error(rw, fmt.Sprintf("Can't get user id: %s\n", id), 404)
 			return
 		}
-		writeResponseBody[models.UserDataResponse](rw, user, "user")
+		userByte := user.ToResponse()
+		writeResponseBody[models.UserDataResponse](rw, userByte, "user")
 
 	}
 	return GetUserHandler
@@ -87,7 +71,8 @@ func UpdateUserHandlerMake(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		writeResponseBody(rw, user)
+		userByte := user.ToResponse()
+		writeResponseBody[models.UserDataResponse](rw, userByte, "user")
 	}
 	return UpdateUserHandler
 }
@@ -124,7 +109,8 @@ func CreateUserHandlerMake(db *sql.DB) http.HandlerFunc {
 		}
 
 		rw.WriteHeader(201) // 204 - Created
-		writeResponseBody(rw, user)
+		userByte := user.ToResponse()
+		writeResponseBody(rw, userByte, "user")
 	}
 	return CreateUserHandler
 }

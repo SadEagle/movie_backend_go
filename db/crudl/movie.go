@@ -25,14 +25,6 @@ func CreateMovieDB(db *sql.DB, movieCreate models.CreateMovieRequest) (models.Mo
 	return movie, nil
 }
 
-func GetMovieListDB(db *sql.DB, movie_id string) (models.MovieListResponse, error) {
-	var getListSchema = `
-		SELECT movie_id
-		FROM favorite_movie
-		WHERE user_id = $1
-		`
-}
-
 // Write correctly
 func UpdateMovieDB(db *sql.DB, movieUpdate models.UpdateMovieRequest, movie_id string) (models.Movie, error) {
 	var updateScheme = ` UPDATE movie SET `
