@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"movie_backend_go/db/crudl"
+	"movie_backend_go/crudl"
 	"movie_backend_go/models"
 
 	"net/http"
