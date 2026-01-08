@@ -2,11 +2,9 @@ package handlers
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"movie_backend_go/crudl"
 	"movie_backend_go/models"
 	"time"
@@ -31,7 +29,7 @@ func (ho *HandlerObj) GetMovieHandler(rw http.ResponseWriter, r *http.Request) {
 	movie, err := crudl.GetMovieDB(ctx, ho.DB, movieID)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't get movie id: %s\n", movieID), 404)
+		http.Error(rw, fmt.Sprintf("Can't get movie id: %s\n", movieID), http.StatusNotFound)
 		return
 	}
 
@@ -55,7 +53,7 @@ func (ho *HandlerObj) GetMovieListHandler(rw http.ResponseWriter, r *http.Reques
 	movieList, err := crudl.GetMovieListDB(ctx, ho.DB)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't get movie list", 500)
+		http.Error(rw, "Can't get movie list", http.StatusInternalServerError)
 		return
 	}
 
@@ -86,7 +84,7 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 	err := decoder.Decode(&updateMovie)
 	if err != nil && err != io.EOF {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't proceed body request", 400)
+		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
 	id := r.PathValue("id")
@@ -94,7 +92,7 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 	movie, err := crudl.UpdateMovieDB(ctx, ho.DB, updateMovie, id)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't update movie", 404)
+		http.Error(rw, "Can't update movie", http.StatusNotFound)
 		return
 	}
 
@@ -123,18 +121,18 @@ func (ho *HandlerObj) CreateMovieHandler(rw http.ResponseWriter, r *http.Request
 	err := decoder.Decode(&createMovie)
 	if err != nil && err != io.EOF {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't proceed body request", 400)
+		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
 
 	movie, err := crudl.CreateMovieDB(ctx, ho.DB, createMovie)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't create movie", 404)
+		http.Error(rw, "Can't create movie", http.StatusNotFound)
 		return
 	}
 
-	rw.WriteHeader(201) // 201 - Create
+	rw.WriteHeader(http.StatusCreated)
 	rw.Header().Set("Content-Type", "application/json")
 	writeResponseBody(rw, movie, "movie list")
 }
@@ -155,8 +153,8 @@ func (ho *HandlerObj) DeleteMovieHandler(rw http.ResponseWriter, r *http.Request
 	err := crudl.DeleteMovieDB(ctx, ho.DB, id)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't delete movie id: %s", id), 404)
+		http.Error(rw, fmt.Sprintf("Can't delete movie id: %s", id), http.StatusNotFound)
 		return
 	}
-	rw.WriteHeader(204) // 204 - Success without returning body
+	rw.WriteHeader(http.StatusCreated)
 }

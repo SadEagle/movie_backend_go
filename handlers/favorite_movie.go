@@ -24,7 +24,7 @@ func (ho *HandlerObj) GetFavoriteMovieListHandler(rw http.ResponseWriter, r *htt
 	favMovieList, err := crudl.GetFavoriteMovieListDB(ctx, ho.DB, user_id)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't get favorite_movie list of user: %s", user_id), 404)
+		http.Error(rw, fmt.Sprintf("Can't get favorite_movie list of user: %s", user_id), http.StatusNotFound)
 		return
 	}
 	writeResponseBody(rw, favMovieList, "favorite_move")
@@ -48,10 +48,10 @@ func (ho *HandlerObj) AddFavoriteMovieHandler(rw http.ResponseWriter, r *http.Re
 	favMovie, err := crudl.AddFavoriteMovieDB(ctx, ho.DB, userID, movieID)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't add favorite movie user_id: %s, movie_id: %s", userID, userID), 404)
+		http.Error(rw, fmt.Sprintf("Can't add favorite movie user_id: %s, movie_id: %s", userID, userID), http.StatusNotFound)
 		return
 	}
-	rw.WriteHeader(201) // 201 - Create
+	rw.WriteHeader(http.StatusCreated)
 	writeResponseBody(rw, favMovie, "favorite movie")
 }
 
@@ -73,8 +73,8 @@ func (ho *HandlerObj) DeleteFavoriteMovieHandler(rw http.ResponseWriter, r *http
 	err := crudl.DeleteFavoriteMovieDB(ctx, ho.DB, user_id, movie_id)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't delete favorite movie user_id: %s, movie_id: %s", user_id, user_id), 404)
+		http.Error(rw, fmt.Sprintf("Can't delete favorite movie user_id: %s, movie_id: %s", user_id, user_id), http.StatusNotFound)
 		return
 	}
-	rw.WriteHeader(204) // 204 - No body
+	rw.WriteHeader(http.StatusNoContent)
 }

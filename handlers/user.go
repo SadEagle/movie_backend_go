@@ -2,11 +2,9 @@ package handlers
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"movie_backend_go/crudl"
 	"movie_backend_go/models"
 	"time"
@@ -31,7 +29,7 @@ func (ho *HandlerObj) GetUserHandler(rw http.ResponseWriter, r *http.Request) {
 	user, err := crudl.GetUserDB(ctx, ho.DB, id)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't get user id: %s\n", id), 404)
+		http.Error(rw, fmt.Sprintf("Can't get user id: %s\n", id), http.StatusNotFound)
 		return
 	}
 	writeResponseBody(rw, user, "user")
@@ -53,7 +51,7 @@ func (ho *HandlerObj) GetUserListHandler(rw http.ResponseWriter, r *http.Request
 	userList, err := crudl.GetUserListDB(ctx, ho.DB)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't get user list", 500)
+		http.Error(rw, "Can't get user list", http.StatusInternalServerError)
 		return
 	}
 
@@ -83,7 +81,7 @@ func (ho *HandlerObj) UpdateUserHandler(rw http.ResponseWriter, r *http.Request)
 	err := decoder.Decode(&updateUserdata)
 	if err != nil && err != io.EOF {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't proceed body request", 400)
+		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
 	user_id := r.PathValue("id")
@@ -92,7 +90,7 @@ func (ho *HandlerObj) UpdateUserHandler(rw http.ResponseWriter, r *http.Request)
 	user, err := crudl.UpdateUserDataDB(ctx, ho.DB, updateUserdata, user_id)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't update user", 404)
+		http.Error(rw, "Can't update user", http.StatusNotFound)
 		return
 	}
 
@@ -120,18 +118,18 @@ func (ho *HandlerObj) CreateUserHandler(rw http.ResponseWriter, r *http.Request)
 	err := decoder.Decode(&createUserData)
 	if err != nil && err != io.EOF {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't proceed body request", 400)
+		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
 
 	user, err := crudl.CreateUserDataDB(ctx, ho.DB, createUserData)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, "Can't create user", 404)
+		http.Error(rw, "Can't create user", http.StatusNotFound)
 		return
 	}
 
-	rw.WriteHeader(201) // 204 - Created
+	rw.WriteHeader(http.StatusCreated)
 	writeResponseBody(rw, user, "user")
 }
 
@@ -151,8 +149,8 @@ func (ho *HandlerObj) DeleteUserHandler(rw http.ResponseWriter, r *http.Request)
 	err := crudl.DeleteUserDB(ctx, ho.DB, id)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't delete user id: %s", id), 404)
+		http.Error(rw, fmt.Sprintf("Can't delete user id: %s", id), http.StatusNotFound)
 		return
 	}
-	rw.WriteHeader(204) // 204 - Success without returning body
+	rw.WriteHeader(http.StatusNoContent)
 }
