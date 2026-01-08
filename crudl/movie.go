@@ -1,6 +1,7 @@
 package crudl
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"movie_backend_go/models"
@@ -9,13 +10,16 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateMovieDB(db *sql.DB, movieCreate models.CreateMovieRequest) (models.Movie, error) {
+func CreateMovieDB(ctx context.Context, db *sql.DB, movieCreate models.CreateMovieRequest) (models.Movie, error) {
 	var createShema = `
 		INSERT INTO movie(id, title)
 		VALUES ($1, $2)
 		RETURNING id, title, rating, created_at
 		`
-	res := db.QueryRow(createShema, uuid.NewString(), movieCreate.Title)
+	res := db.QueryRowContext(ctx, createShema, uuid.NewString(), movieCreate.Title)
+	if err := res.Err(); err != nil {
+		return models.Movie{}, fmt.Errorf("check QueryRowContext correctness: %w", err)
+	}
 
 	movie := models.Movie{}
 	err := res.Scan(&movie.ID, &movie.Title, &movie.Rating, &movie.CreatedAt)
@@ -26,7 +30,7 @@ func CreateMovieDB(db *sql.DB, movieCreate models.CreateMovieRequest) (models.Mo
 }
 
 // Write correctly
-func UpdateMovieDB(db *sql.DB, movieUpdate models.UpdateMovieRequest, movie_id string) (models.Movie, error) {
+func UpdateMovieDB(ctx context.Context, db *sql.DB, movieUpdate models.UpdateMovieRequest, movieID string) (models.Movie, error) {
 	var updateScheme = ` UPDATE movie SET `
 	updates := []string{}
 	if movieUpdate.Title != nil {
@@ -34,10 +38,13 @@ func UpdateMovieDB(db *sql.DB, movieUpdate models.UpdateMovieRequest, movie_id s
 	}
 	updateString := strings.Join(updates, ", ")
 	updateScheme += updateString
-	updateScheme += fmt.Sprintf("\n WHERE id = '%s'", movie_id)
+	updateScheme += fmt.Sprintf("\n WHERE id = '%s'", movieID)
 	updateScheme += "\n RETURNING id, title, rating, created_at"
 
-	res := db.QueryRow(updateScheme)
+	res := db.QueryRowContext(ctx, updateScheme)
+	if err := res.Err(); err != nil {
+		return models.Movie{}, fmt.Errorf("check QueryRowContext correctness: %w", err)
+	}
 
 	movie := models.Movie{}
 	err := res.Scan(&movie.ID, &movie.Title, &movie.Rating, &movie.CreatedAt)
@@ -47,13 +54,16 @@ func UpdateMovieDB(db *sql.DB, movieUpdate models.UpdateMovieRequest, movie_id s
 	return movie, nil
 }
 
-func GetMovieDB(db *sql.DB, id string) (models.Movie, error) {
+func GetMovieDB(ctx context.Context, db *sql.DB, movieID string) (models.Movie, error) {
 	var getSchema = `
 		SELECT id, title, rating, created_at
 		FROM movie
 		WHERE id = $1
 		`
-	res := db.QueryRow(getSchema, id)
+	res := db.QueryRowContext(ctx, getSchema, movieID)
+	if err := res.Err(); err != nil {
+		return models.Movie{}, fmt.Errorf("check QueryRowContext correctness: %w", err)
+	}
 
 	movie := models.Movie{}
 	err := res.Scan(&movie.ID, &movie.Title, &movie.Rating, &movie.CreatedAt)
@@ -63,12 +73,12 @@ func GetMovieDB(db *sql.DB, id string) (models.Movie, error) {
 	return movie, nil
 }
 
-func GetMovieListDB(db *sql.DB) (models.MovieList, error) {
+func GetMovieListDB(ctx context.Context, db *sql.DB) (models.MovieList, error) {
 	var getMovieListSchema = `
 		SELECT id, title, rating, created_at
 		FROM movie
 		`
-	resRows, err := db.Query(getMovieListSchema)
+	resRows, err := db.QueryContext(ctx, getMovieListSchema)
 	if err != nil {
 		return models.MovieList{}, fmt.Errorf("get movie list for user: %w", err)
 	}
@@ -76,6 +86,13 @@ func GetMovieListDB(db *sql.DB) (models.MovieList, error) {
 
 	movieList := models.MovieList{}
 	for resRows.Next() {
+		select {
+		case <-ctx.Done():
+			return models.MovieList{}, fmt.Errorf("context cancelled: %w", ctx.Err())
+		default:
+			// Continue processing
+		}
+
 		var movie = models.Movie{}
 		if err := resRows.Scan(&movie.ID, &movie.Title, &movie.Rating, &movie.CreatedAt); err != nil {
 			return models.MovieList{}, fmt.Errorf("scanning getting rows")
@@ -88,12 +105,12 @@ func GetMovieListDB(db *sql.DB) (models.MovieList, error) {
 	return movieList, nil
 }
 
-func DeleteMovieDB(db *sql.DB, id string) error {
+func DeleteMovieDB(ctx context.Context, db *sql.DB, movieID string) error {
 	var deleteSchema = `
 		DELETE FROM movie
 		WHERE id = $1
 		`
-	res, err := db.Exec(deleteSchema, id)
+	res, err := db.ExecContext(ctx, deleteSchema, movieID)
 	if err != nil {
 		return fmt.Errorf("deleting movie: %w", err)
 	}

@@ -47,23 +47,24 @@ func main() {
 	go ping_db_check()
 
 	mux := http.NewServeMux()
+	handlerObj := handlers.HandlerObj{DB: db, Log: *log.Default()}
 
 	// user
-	mux.HandleFunc("GET /user/{id}", handlers.GetUserHandlerMake(db))
-	mux.HandleFunc("GET /user", handlers.GetUserListHandlerMake(db))
-	mux.HandleFunc("POST /user", handlers.CreateUserHandlerMake(db))
-	mux.HandleFunc("PATCH /user/{id}", handlers.UpdateUserHandlerMake(db))
-	mux.HandleFunc("DELETE /user/{id}", handlers.DeleteUserHandler(db))
+	mux.HandleFunc("GET /user/{id}", handlerObj.GetUserHandler)
+	mux.HandleFunc("GET /user", handlerObj.GetUserListHandler)
+	mux.HandleFunc("POST /user", handlerObj.CreateUserHandler)
+	mux.HandleFunc("PATCH /user/{id}", handlerObj.UpdateUserHandler)
+	mux.HandleFunc("DELETE /user/{id}", handlerObj.DeleteUserHandler)
 	// movie
-	mux.HandleFunc("GET /movie/{id}", handlers.GetMovieHandlerMake(db))
-	mux.HandleFunc("GET /movie", handlers.GetMovieListHandlerMake(db))
-	mux.HandleFunc("POST /movie", handlers.CreateMovieHandlerMake(db))
-	mux.HandleFunc("PATCH /movie/{id}", handlers.UpdateMovieHandlerMake(db))
-	mux.HandleFunc("DELETE /movie/{id}", handlers.DeleteMovieHandlerMake(db))
+	mux.HandleFunc("GET /movie/{id}", handlerObj.GetMovieHandler)
+	mux.HandleFunc("GET /movie", handlerObj.GetMovieListHandler)
+	mux.HandleFunc("POST /movie", handlerObj.CreateMovieHandler)
+	mux.HandleFunc("PATCH /movie/{id}", handlerObj.UpdateMovieHandler)
+	mux.HandleFunc("DELETE /movie/{id}", handlerObj.DeleteMovieHandler)
 	// favorite_movie
-	mux.HandleFunc("GET /user/{user_id}/favorite_movie", handlers.GetFavoriteMovieListHandlerMake(db))
-	mux.HandleFunc("POST /user/{user_id}/favorite_movie/{movie_id}", handlers.AddFavoriteMovieHandlerMake(db))
-	mux.HandleFunc("DELETE /user/{user_id}/favorite_movie/{movie_id}", handlers.DeleteFavoriteMovieHandlerMake(db))
+	mux.HandleFunc("GET /user/{user_id}/favorite_movie", handlerObj.GetFavoriteMovieListHandler)
+	mux.HandleFunc("POST /user/{user_id}/favorite_movie/{movie_id}", handlerObj.AddFavoriteMovieHandler)
+	mux.HandleFunc("DELETE /user/{user_id}/favorite_movie/{movie_id}", handlerObj.DeleteFavoriteMovieHandler)
 	// Swagger
 	mux.HandleFunc("GET /swagger/", httpSwagger.WrapHandler)
 

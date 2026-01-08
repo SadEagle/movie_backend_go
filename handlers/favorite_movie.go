@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	"log"
 	"movie_backend_go/crudl"
 	"net/http"
+	"time"
 )
 
 // @Description  Get user favorite_movie list
@@ -17,18 +17,17 @@ import (
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /user/{user_id}/favorite_movie [get]
-func GetFavoriteMovieListHandlerMake(db *sql.DB) http.HandlerFunc {
-	AddFavoriteMovieHandler := func(rw http.ResponseWriter, r *http.Request) {
-		user_id := r.PathValue("user_id")
-		favMovieList, err := crudl.GetFavoriteMovieListDB(db, user_id)
-		if err != nil {
-			log.Println(err)
-			http.Error(rw, fmt.Sprintf("Can't get favorite_movie list of user: %s", user_id), 404)
-			return
-		}
-		writeResponseBody(rw, favMovieList, "favorite_move")
+func (ho *HandlerObj) GetFavoriteMovieListHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
+	defer close()
+	user_id := r.PathValue("user_id")
+	favMovieList, err := crudl.GetFavoriteMovieListDB(ctx, ho.DB, user_id)
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, fmt.Sprintf("Can't get favorite_movie list of user: %s", user_id), 404)
+		return
 	}
-	return AddFavoriteMovieHandler
+	writeResponseBody(rw, favMovieList, "favorite_move")
 }
 
 // @Description  Add favorite movie
@@ -41,20 +40,19 @@ func GetFavoriteMovieListHandlerMake(db *sql.DB) http.HandlerFunc {
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /user/{user_id}/favorite_movie/{movie_id} [post]
-func AddFavoriteMovieHandlerMake(db *sql.DB) http.HandlerFunc {
-	AddFavoriteMovieHandler := func(rw http.ResponseWriter, r *http.Request) {
-		user_id := r.PathValue("user_id")
-		movie_id := r.PathValue("movie_id")
-		favMovie, err := crudl.AddFavoriteMovieDB(db, user_id, movie_id)
-		if err != nil {
-			log.Println(err)
-			http.Error(rw, fmt.Sprintf("Can't add favorite movie user_id: %s, movie_id: %s", user_id, user_id), 404)
-			return
-		}
-		rw.WriteHeader(201) // 201 - Create
-		writeResponseBody(rw, favMovie, "favorite movie")
+func (ho *HandlerObj) AddFavoriteMovieHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
+	defer close()
+	userID := r.PathValue("user_id")
+	movieID := r.PathValue("movie_id")
+	favMovie, err := crudl.AddFavoriteMovieDB(ctx, ho.DB, userID, movieID)
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, fmt.Sprintf("Can't add favorite movie user_id: %s, movie_id: %s", userID, userID), 404)
+		return
 	}
-	return AddFavoriteMovieHandler
+	rw.WriteHeader(201) // 201 - Create
+	writeResponseBody(rw, favMovie, "favorite movie")
 }
 
 // @Description  Delete favorite movie
@@ -67,17 +65,16 @@ func AddFavoriteMovieHandlerMake(db *sql.DB) http.HandlerFunc {
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /user/{user_id}/favorite_movie/{movie_id} [delete]
-func DeleteFavoriteMovieHandlerMake(db *sql.DB) http.HandlerFunc {
-	AddFavoriteMovieHandler := func(rw http.ResponseWriter, r *http.Request) {
-		user_id := r.PathValue("user_id")
-		movie_id := r.PathValue("movie_id")
-		err := crudl.DeleteFavoriteMovieDB(db, user_id, movie_id)
-		if err != nil {
-			log.Println(err)
-			http.Error(rw, fmt.Sprintf("Can't delete favorite movie user_id: %s, movie_id: %s", user_id, user_id), 404)
-			return
-		}
-		rw.WriteHeader(204) // 204 - No body
+func (ho *HandlerObj) DeleteFavoriteMovieHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
+	defer close()
+	user_id := r.PathValue("user_id")
+	movie_id := r.PathValue("movie_id")
+	err := crudl.DeleteFavoriteMovieDB(ctx, ho.DB, user_id, movie_id)
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, fmt.Sprintf("Can't delete favorite movie user_id: %s, movie_id: %s", user_id, user_id), 404)
+		return
 	}
-	return AddFavoriteMovieHandler
+	rw.WriteHeader(204) // 204 - No body
 }

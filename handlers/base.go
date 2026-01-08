@@ -1,11 +1,17 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 )
+
+type HandlerObj struct {
+	DB  *sql.DB
+	Log log.Logger
+}
 
 func writeResponseBody[T any](rw http.ResponseWriter, responseByteObj T, responseObjName string) {
 	var enc = json.NewEncoder(rw)
