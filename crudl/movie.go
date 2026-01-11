@@ -10,19 +10,47 @@ import (
 	"github.com/google/uuid"
 )
 
+func baseGetMovieDB(ctx context.Context, db *sql.DB, identField any, schema string) (models.Movie, error) {
+	movie := models.Movie{}
+	resRow := db.QueryRowContext(ctx, schema, identField)
+	err := resRow.Scan(&movie.ID, &movie.Title, &movie.AmountRates, &movie.Rating, &movie.CreatedAt)
+	if err != nil {
+		return models.Movie{}, fmt.Errorf("scanning selected user data: %w", err)
+	}
+	return movie, nil
+}
+
+func GetMovieByIDDB(ctx context.Context, db *sql.DB, movieID uuid.UUID) (models.Movie, error) {
+	var userSearchSchema = `
+		SELECT (id, title, amount_rates, rating, created_at)
+		FROM movie
+		WHERE id = $1
+		`
+	return baseGetMovieDB(ctx, db, movieID, userSearchSchema)
+}
+
+func GetMovieByTitleDB(ctx context.Context, db *sql.DB, movieTitle string) (models.Movie, error) {
+	var userSearchSchema = `
+		SELECT (id, title, amount_rates, rating, created_at)
+		FROM movie
+		WHERE title = $1
+		`
+	return baseGetMovieDB(ctx, db, movieTitle, userSearchSchema)
+}
+
 func CreateMovieDB(ctx context.Context, db *sql.DB, movieCreate models.CreateMovieRequest) (models.Movie, error) {
 	var createShema = `
-		INSERT INTO movie(id, title)
-		VALUES ($1, $2)
-		RETURNING id, title, rating, created_at
+		INSERT INTO movie(title)
+		VALUES ($1)
+		RETURNING id, title, amount_rates, rating, created_at
 		`
-	res := db.QueryRowContext(ctx, createShema, uuid.NewString(), movieCreate.Title)
+	res := db.QueryRowContext(ctx, createShema, movieCreate.Title)
 	if err := res.Err(); err != nil {
 		return models.Movie{}, fmt.Errorf("check QueryRowContext correctness: %w", err)
 	}
 
 	movie := models.Movie{}
-	err := res.Scan(&movie.ID, &movie.Title, &movie.Rating, &movie.CreatedAt)
+	err := res.Scan(&movie.ID, &movie.Title, &movie.AmountRates, &movie.Rating, &movie.CreatedAt)
 	if err != nil {
 		return models.Movie{}, fmt.Errorf("scanning created movie: %w", err)
 	}
@@ -30,7 +58,8 @@ func CreateMovieDB(ctx context.Context, db *sql.DB, movieCreate models.CreateMov
 }
 
 // Write correctly
-func UpdateMovieDB(ctx context.Context, db *sql.DB, movieUpdate models.UpdateMovieRequest, movieID string) (models.Movie, error) {
+// FIX: SQL injection
+func UpdateMovieDB(ctx context.Context, db *sql.DB, movieUpdate models.UpdateMovieRequest, movieID uuid.UUID) (models.Movie, error) {
 	var updateScheme = ` UPDATE movie SET `
 	updates := []string{}
 	if movieUpdate.Title != nil {
@@ -54,28 +83,9 @@ func UpdateMovieDB(ctx context.Context, db *sql.DB, movieUpdate models.UpdateMov
 	return movie, nil
 }
 
-func GetMovieDB(ctx context.Context, db *sql.DB, movieID string) (models.Movie, error) {
-	var getSchema = `
-		SELECT id, title, rating, created_at
-		FROM movie
-		WHERE id = $1
-		`
-	res := db.QueryRowContext(ctx, getSchema, movieID)
-	if err := res.Err(); err != nil {
-		return models.Movie{}, fmt.Errorf("check QueryRowContext correctness: %w", err)
-	}
-
-	movie := models.Movie{}
-	err := res.Scan(&movie.ID, &movie.Title, &movie.Rating, &movie.CreatedAt)
-	if err != nil {
-		return models.Movie{}, fmt.Errorf("scanning requested movie: %w", err)
-	}
-	return movie, nil
-}
-
 func GetMovieListDB(ctx context.Context, db *sql.DB) (models.MovieList, error) {
 	var getMovieListSchema = `
-		SELECT id, title, rating, created_at
+		SELECT id, title, amount_rates, rating, created_at
 		FROM movie
 		`
 	resRows, err := db.QueryContext(ctx, getMovieListSchema)
@@ -94,7 +104,7 @@ func GetMovieListDB(ctx context.Context, db *sql.DB) (models.MovieList, error) {
 		}
 
 		var movie = models.Movie{}
-		if err := resRows.Scan(&movie.ID, &movie.Title, &movie.Rating, &movie.CreatedAt); err != nil {
+		if err := resRows.Scan(&movie.ID, &movie.Title, &movie.AmountRates, &movie.Rating, &movie.CreatedAt); err != nil {
 			return models.MovieList{}, fmt.Errorf("scanning getting rows")
 		}
 		movieList.MovieList = append(movieList.MovieList, movie)
@@ -105,7 +115,7 @@ func GetMovieListDB(ctx context.Context, db *sql.DB) (models.MovieList, error) {
 	return movieList, nil
 }
 
-func DeleteMovieDB(ctx context.Context, db *sql.DB, movieID string) error {
+func DeleteMovieDB(ctx context.Context, db *sql.DB, movieID uuid.UUID) error {
 	var deleteSchema = `
 		DELETE FROM movie
 		WHERE id = $1

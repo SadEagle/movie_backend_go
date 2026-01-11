@@ -18,3 +18,5 @@ func checkNonEmptyDeletion(res sql.Result) error {
 	}
 	return nil
 }
+
+var NoObjectIDError = errors.New("Object with current ID wasn't found")

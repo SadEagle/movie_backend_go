@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"movie_backend_go/crudl"
 	"movie_backend_go/models"
@@ -25,11 +26,18 @@ import (
 func (ho *HandlerObj) GetUserHandler(rw http.ResponseWriter, r *http.Request) {
 	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer close()
-	id := r.PathValue("id")
-	user, err := crudl.GetUserDB(ctx, ho.DB, id)
+
+	userID, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't get user id: %s\n", id), http.StatusNotFound)
+		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
+		return
+	}
+
+	user, err := crudl.GetUserByIDDB(ctx, ho.DB, userID)
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, fmt.Sprintf("Can't get user id: %s\n", userID), http.StatusNotFound)
 		return
 	}
 	writeResponseBody(rw, user, "user")
@@ -77,17 +85,22 @@ func (ho *HandlerObj) UpdateUserHandler(rw http.ResponseWriter, r *http.Request)
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields() // Strict parsing
 
-	var updateUserdata models.UpdateUserDataRequest
+	var updateUserdata models.UpdateUserRequest
 	err := decoder.Decode(&updateUserdata)
 	if err != nil && err != io.EOF {
 		ho.Log.Println(err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
-	user_id := r.PathValue("id")
+	userID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
+		return
+	}
 
 	fmt.Println(updateUserdata)
-	user, err := crudl.UpdateUserDataDB(ctx, ho.DB, updateUserdata, user_id)
+	user, err := crudl.UpdateUserDB(ctx, ho.DB, updateUserdata, userID)
 	if err != nil {
 		ho.Log.Println(err)
 		http.Error(rw, "Can't update user", http.StatusNotFound)
@@ -114,7 +127,7 @@ func (ho *HandlerObj) CreateUserHandler(rw http.ResponseWriter, r *http.Request)
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields() // Strict parsing
 
-	var createUserData models.CreateUserDataRequest
+	var createUserData models.CreateUserRequest
 	err := decoder.Decode(&createUserData)
 	if err != nil && err != io.EOF {
 		ho.Log.Println(err)
@@ -122,7 +135,7 @@ func (ho *HandlerObj) CreateUserHandler(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, err := crudl.CreateUserDataDB(ctx, ho.DB, createUserData)
+	user, err := crudl.CreateUserDB(ctx, ho.DB, createUserData)
 	if err != nil {
 		ho.Log.Println(err)
 		http.Error(rw, "Can't create user", http.StatusNotFound)
@@ -145,11 +158,18 @@ func (ho *HandlerObj) CreateUserHandler(rw http.ResponseWriter, r *http.Request)
 func (ho *HandlerObj) DeleteUserHandler(rw http.ResponseWriter, r *http.Request) {
 	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer close()
-	id := r.PathValue("id")
-	err := crudl.DeleteUserDB(ctx, ho.DB, id)
+
+	userID, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't delete user id: %s", id), http.StatusNotFound)
+		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
+		return
+	}
+
+	err = crudl.DeleteUserDB(ctx, ho.DB, userID)
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, fmt.Sprintf("Can't delete user id: %s", userID), http.StatusNotFound)
 		return
 	}
 	rw.WriteHeader(http.StatusNoContent)

@@ -13,7 +13,7 @@ type HandlerObj struct {
 	Log log.Logger
 }
 
-func writeResponseBody[T any](rw http.ResponseWriter, responseByteObj T, responseObjName string) {
+func writeResponseBody(rw http.ResponseWriter, responseByteObj any, responseObjName string) {
 	var enc = json.NewEncoder(rw)
 	err := enc.Encode(responseByteObj)
 	if err != nil {

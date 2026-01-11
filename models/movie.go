@@ -7,10 +7,11 @@ import (
 )
 
 type Movie struct {
-	ID        uuid.UUID `json:"id"`
-	Title     string    `json:"title"`
-	Rating    float32   `json:"rating"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          uuid.UUID `json:"id"`
+	Title       string    `json:"title"`
+	AmountRates int       `json:"amount_rates"`
+	Rating      float32   `json:"rating"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type MovieList struct {

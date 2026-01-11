@@ -7,6 +7,11 @@ type FavoriteMovie struct {
 	MovieID uuid.UUID `json:"movie_id"`
 }
 
+type FavoriteMovieElem struct {
+	MovieID uuid.UUID `json:"movie_id"`
+}
+
 type FavoriteMovieList struct {
-	FavMovieList []FavoriteMovie `json:"favorite_movie_list"`
+	UserID       uuid.UUID           `json:"user_id"`
+	FavMovieList []FavoriteMovieElem `json:"favorite_movie_list"`
 }

@@ -5,26 +5,27 @@ import (
 	"time"
 )
 
-type UserData struct {
-	ID        uuid.UUID `json:"user_data"`
+type User struct {
+	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Login     string    `json:"login"`
 	Password  string    `json:"-"`
+	IsAdmin   *bool     `json:"is_admin"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type UserDataList struct {
-	UserList []UserData `json:"user_list"`
+type UserList struct {
+	UserList []User `json:"user_list"`
 }
 
 // Request structs
-type CreateUserDataRequest struct {
+type CreateUserRequest struct {
 	Name     string `json:"name"`
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }
 
-type UpdateUserDataRequest struct {
+type UpdateUserRequest struct {
 	Name     *string `json:"name"`
 	Login    *string `json:"login"`
 	Password *string `json:"password"`

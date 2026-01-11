@@ -2,78 +2,82 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
+	"io"
 	"movie_backend_go/crudl"
+	"movie_backend_go/models"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-// @Description  Get user favorite_movie list
-// @Tags         favorite_movie
+// @Description  Get user rated_movie list
+// @Tags         rated_movie
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"
-// @Success      200  {object}  models.FavoriteMovieList
+// @Success      200  {object}  models.RatedMovieList
 // @Failure      404  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /user/{user_id}/favorite_movie [get]
-func (ho *HandlerObj) GetFavoriteMovieListHandler(rw http.ResponseWriter, r *http.Request) {
+// @Router       /user/{user_id}/rated_movie [get]
+func (ho *HandlerObj) GetRatedMovieListHandler(rw http.ResponseWriter, r *http.Request) {
 	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer close()
 
 	userID, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
+		http.Error(rw, "Requested user id should contain uuid", http.StatusBadRequest)
 		return
 	}
 
-	favMovieList, err := crudl.GetFavoriteMovieListDB(ctx, ho.DB, userID)
+	ratedMovieList, err := crudl.GetRatedMovieListDB(ctx, ho.DB, userID)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't get favorite_movie list of user: %s", userID), http.StatusNotFound)
+		http.Error(rw, fmt.Sprintf("Can't get rated movie list of user: %s", userID), http.StatusNotFound)
 		return
 	}
-	writeResponseBody(rw, favMovieList, "favorite_move")
+	writeResponseBody(rw, ratedMovieList, "rated move list")
 }
 
-// @Description  Add favorite movie
-// @Tags         favorite_movie
+// @Description  Get user rated_movie list
+// @Tags         rated_movie
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"
-// @Param        movie_id   path      string  true  "Movie ID"
-// @Success      200  {object}  models.FavoriteMovie
+// @Param        request   	body      models.RatedMovieListElem  true  "Rate movie data"
+// @Success      200  {object}  models.RatedMovie
 // @Failure      404  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /user/{user_id}/favorite_movie/{movie_id} [post]
-func (ho *HandlerObj) AddFavoriteMovieHandler(rw http.ResponseWriter, r *http.Request) {
+// @Router       /user/{user_id}/rated_movie [get]
+func (ho *HandlerObj) AddRatedMovieHandler(rw http.ResponseWriter, r *http.Request) {
 	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer close()
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
 
-	userID, err := uuid.Parse(r.PathValue("user_id"))
+	userID, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
 		ho.Log.Println(err)
 		http.Error(rw, "Requested user id should contain uuid", http.StatusBadRequest)
 		return
 	}
-	movieID, err := uuid.Parse(r.PathValue("movie_id"))
-	if err != nil {
+
+	var ratedMovieElem models.RatedMovieElem
+	err = decoder.Decode(&ratedMovieElem)
+	if err != nil && err != io.EOF {
 		ho.Log.Println(err)
-		http.Error(rw, "Requested movie id should contain uuid", http.StatusBadRequest)
+		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
 
-	// TODO: check that userID and movieID are exists
-	favMovie, err := crudl.AddFavoriteMovieDB(ctx, ho.DB, userID, movieID)
+	ratedMovieList, err := crudl.GetRatedMovieListDB(ctx, ho.DB, userID)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't add favorite movie user_id: %s, movie_id: %s", userID, userID), http.StatusNotFound)
+		http.Error(rw, fmt.Sprintf("Can't get rated movie list of user: %s", userID), http.StatusNotFound)
 		return
 	}
-	rw.WriteHeader(http.StatusCreated)
-	writeResponseBody(rw, favMovie, "favorite movie")
+	writeResponseBody(rw, ratedMovieList, "rated move list")
 }
 
 // @Description  Delete favorite movie
@@ -86,7 +90,7 @@ func (ho *HandlerObj) AddFavoriteMovieHandler(rw http.ResponseWriter, r *http.Re
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /user/{user_id}/favorite_movie/{movie_id} [delete]
-func (ho *HandlerObj) DeleteFavoriteMovieHandler(rw http.ResponseWriter, r *http.Request) {
+func (ho *HandlerObj) DeleteRatedMovieHandler(rw http.ResponseWriter, r *http.Request) {
 	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer close()
 
@@ -103,11 +107,13 @@ func (ho *HandlerObj) DeleteFavoriteMovieHandler(rw http.ResponseWriter, r *http
 		return
 	}
 
-	err = crudl.DeleteFavoriteMovieDB(ctx, ho.DB, userID, movieID)
+	err = crudl.DeleteRatedMovieDB(ctx, ho.DB, userID, movieID)
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't delete favorite movie user_id: %s, movie_id: %s", userID, userID), http.StatusNotFound)
+		http.Error(rw, fmt.Sprintf("Can't delete rated movie user_id: %s, movie_id: %s", userID, userID), http.StatusNotFound)
 		return
 	}
 	rw.WriteHeader(http.StatusNoContent)
 }
+
+// TODO: Add update

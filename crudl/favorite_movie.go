@@ -3,26 +3,21 @@ package crudl
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"movie_backend_go/models"
+
+	"github.com/google/uuid"
 )
 
-func AddFavoriteMovieDB(ctx context.Context, db *sql.DB, userID string, movieID string) (models.FavoriteMovie, error) {
+func AddFavoriteMovieDB(ctx context.Context, db *sql.DB, userID uuid.UUID, movieID uuid.UUID) (models.FavoriteMovie, error) {
 
-	var createShema = `
+	var addFavoriteMovieSchema = `
 		INSERT INTO favorite_movie(user_id, movie_id)
 		VALUES ($1, $2)
 		RETURNING user_id, movie_id
 		`
-	if userID == "" {
-		return models.FavoriteMovie{}, errors.New("userID cannot be empty")
-	}
-	if movieID == "" {
-		return models.FavoriteMovie{}, errors.New("userID cannot be empty")
-	}
 
-	res_create := db.QueryRowContext(ctx, createShema, userID, movieID)
+	res_create := db.QueryRowContext(ctx, addFavoriteMovieSchema, userID, movieID)
 	if err := res_create.Err(); err != nil {
 		return models.FavoriteMovie{}, fmt.Errorf("check QueryRowContext correctness: %w", err)
 	}
@@ -35,7 +30,7 @@ func AddFavoriteMovieDB(ctx context.Context, db *sql.DB, userID string, movieID 
 	return favoriteMovie, nil
 }
 
-func DeleteFavoriteMovieDB(ctx context.Context, db *sql.DB, userID string, movieID string) error {
+func DeleteFavoriteMovieDB(ctx context.Context, db *sql.DB, userID uuid.UUID, movieID uuid.UUID) error {
 	var createShema = `
 		DELETE FROM favorite_movie
 		WHERE user_id = $1 AND movie_id = $2
@@ -48,10 +43,10 @@ func DeleteFavoriteMovieDB(ctx context.Context, db *sql.DB, userID string, movie
 	return checkNonEmptyDeletion(res)
 }
 
-// Simplified version. Better option will be create non-response datatype and later convert to response one
-func GetFavoriteMovieListDB(ctx context.Context, db *sql.DB, userID string) (models.FavoriteMovieList, error) {
+// TODO: Probably, optimize by returning one list of id's instead of list of objects extra useless transformations, because no extra params except movie_id
+func GetFavoriteMovieListDB(ctx context.Context, db *sql.DB, userID uuid.UUID) (models.FavoriteMovieList, error) {
 	var getListSchema = `
-		SELECT user_id, movie_id
+		SELECT movie_id
 		FROM favorite_movie
 		WHERE user_id = $1
 		`
@@ -62,7 +57,7 @@ func GetFavoriteMovieListDB(ctx context.Context, db *sql.DB, userID string) (mod
 	}
 	defer resRows.Close()
 
-	favMovieList := models.FavoriteMovieList{}
+	favMovieList := models.FavoriteMovieList{UserID: userID}
 	for resRows.Next() {
 		select {
 		case <-ctx.Done():
@@ -71,8 +66,8 @@ func GetFavoriteMovieListDB(ctx context.Context, db *sql.DB, userID string) (mod
 			// Continue processing
 		}
 
-		var favMovie models.FavoriteMovie
-		if err := resRows.Scan(&favMovie.UserID, &favMovie.MovieID); err != nil {
+		favMovie := models.FavoriteMovieElem{}
+		if err := resRows.Scan(&favMovie.MovieID); err != nil {
 			return models.FavoriteMovieList{}, fmt.Errorf("reading favorite movie list: %w", err)
 		}
 		favMovieList.FavMovieList = append(favMovieList.FavMovieList, favMovie)

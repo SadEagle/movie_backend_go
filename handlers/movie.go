@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 // @Summary      Show movie
@@ -25,8 +27,13 @@ import (
 func (ho *HandlerObj) GetMovieHandler(rw http.ResponseWriter, r *http.Request) {
 	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer close()
-	movieID := r.PathValue("id")
-	movie, err := crudl.GetMovieDB(ctx, ho.DB, movieID)
+	movieID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
+		return
+	}
+	movie, err := crudl.GetMovieByIDDB(ctx, ho.DB, movieID)
 	if err != nil {
 		ho.Log.Println(err)
 		http.Error(rw, fmt.Sprintf("Can't get movie id: %s\n", movieID), http.StatusNotFound)
@@ -78,7 +85,7 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer close()
 	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields() // Strict parsing
+	decoder.DisallowUnknownFields()
 
 	var updateMovie models.UpdateMovieRequest
 	err := decoder.Decode(&updateMovie)
@@ -87,9 +94,14 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
-	id := r.PathValue("id")
+	movieID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
+		return
+	}
 
-	movie, err := crudl.UpdateMovieDB(ctx, ho.DB, updateMovie, id)
+	movie, err := crudl.UpdateMovieDB(ctx, ho.DB, updateMovie, movieID)
 	if err != nil {
 		ho.Log.Println(err)
 		http.Error(rw, "Can't update movie", http.StatusNotFound)
@@ -149,11 +161,17 @@ func (ho *HandlerObj) CreateMovieHandler(rw http.ResponseWriter, r *http.Request
 func (ho *HandlerObj) DeleteMovieHandler(rw http.ResponseWriter, r *http.Request) {
 	ctx, close := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer close()
-	id := r.PathValue("id")
-	err := crudl.DeleteMovieDB(ctx, ho.DB, id)
+	movieID, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
 		ho.Log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't delete movie id: %s", id), http.StatusNotFound)
+		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
+		return
+	}
+
+	err = crudl.DeleteMovieDB(ctx, ho.DB, movieID)
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, fmt.Sprintf("Can't delete movie id: %s", movieID), http.StatusNotFound)
 		return
 	}
 	rw.WriteHeader(http.StatusCreated)
