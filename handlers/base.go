@@ -11,10 +11,11 @@ import (
 )
 
 const OpTimeContext = 5 * time.Minute
+const CheckHealthTimeContext = 2 * time.Minute
 
 type HandlerObj struct {
 	DBPool sqlc.Querier
-	Log    log.Logger
+	Log    *log.Logger
 }
 
 func writeResponseBody(rw http.ResponseWriter, responseByteObj any, responseObjName string) {

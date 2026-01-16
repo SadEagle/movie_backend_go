@@ -28,9 +28,7 @@ CREATE TABLE IF NOT EXISTS rated_movie(
 
 CREATE MATERIALIZED VIEW movie_rating_view AS
 SELECT movie_id, COUNT(*) AS amount_rates, AVG(rating) AS rating
-FROM
-  rated_movie
-GROUP BY
-  movie_id;
+FROM rated_movie
+GROUP BY movie_id;
 
 CREATE UNIQUE INDEX movie_rating_view_index ON movie_rating_view(movie_id);

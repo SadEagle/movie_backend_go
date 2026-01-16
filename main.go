@@ -19,9 +19,7 @@ import (
 // @version         1.0
 // @description     Basic swagger for current api
 // @termsOfService  http://swagger.io/terms/
-
 // @host      localhost:8080
-
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
@@ -85,6 +83,8 @@ func main() {
 	mux.HandleFunc("POST /user/{user_id}/rated_movie", handlerObj.CreateRatedMovieHandler)
 	mux.HandleFunc("PATCH /user/{user_id}/rated_movie", handlerObj.UpdateRatedMovieHandler)
 	mux.HandleFunc("DELETE /user/{user_id}/rated_movie/{movie_id}", handlerObj.DeleteRatedMovieHandler)
+	// System specific commands
+	mux.Handle("GET /healthcheck", handlers.CreateCheckHealthHandlerCreate(dbPool))
 	// Swagger
 	mux.HandleFunc("GET /swagger/", httpSwagger.WrapHandler)
 

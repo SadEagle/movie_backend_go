@@ -13,6 +13,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PORT=${DB_PORT}
       - DB_PASSWORD_FILE=/run/secrets/db_passwd_secret
+
     depends_on:
       dev-db:
         condition: service_healthy
@@ -33,10 +34,7 @@ services:
       - dev-db-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 10s
-      retries: 5
       start_period: 10s
-      timeout: 10s
 
 networks:
   dev-db-network:
