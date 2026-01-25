@@ -12,23 +12,28 @@ import (
 
 type Querier interface {
 	CreateMovie(ctx context.Context, title string) (Movie, error)
+	CreateMovieComment(ctx context.Context, arg CreateMovieCommentParams) (MovieComment, error)
 	CreateMovieFavorite(ctx context.Context, arg CreateMovieFavoriteParams) (FavoriteMovie, error)
 	CreateMovieRating(ctx context.Context, arg CreateMovieRatingParams) (RatedMovie, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (UserDatum, error)
 	DeleteMovie(ctx context.Context, id pgtype.UUID) (int64, error)
+	DeleteMovieComment(ctx context.Context, arg DeleteMovieCommentParams) (int64, error)
 	DeleteMovieFavorite(ctx context.Context, arg DeleteMovieFavoriteParams) (int64, error)
 	DeleteMovieRating(ctx context.Context, arg DeleteMovieRatingParams) (int64, error)
 	DeleteUser(ctx context.Context, id pgtype.UUID) (int64, error)
 	GetMovieByID(ctx context.Context, id pgtype.UUID) (GetMovieByIDRow, error)
 	GetMovieByTitle(ctx context.Context, title string) (GetMovieByTitleRow, error)
+	GetMovieCommentList(ctx context.Context, movieID pgtype.UUID) ([]GetMovieCommentListRow, error)
 	GetMovieFavoriteList(ctx context.Context, userID pgtype.UUID) ([]pgtype.UUID, error)
 	GetMovieList(ctx context.Context) ([]Movie, error)
 	GetMovieRatingList(ctx context.Context, userID pgtype.UUID) ([]GetMovieRatingListRow, error)
 	GetUserByID(ctx context.Context, id pgtype.UUID) (UserDatum, error)
 	GetUserByLogin(ctx context.Context, login string) (UserDatum, error)
+	GetUserCommentList(ctx context.Context, userID pgtype.UUID) ([]GetUserCommentListRow, error)
 	GetUserList(ctx context.Context) ([]UserDatum, error)
 	UpdateMoveRating(ctx context.Context, arg UpdateMoveRatingParams) (RatedMovie, error)
 	UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie, error)
+	UpdateMovieComment(ctx context.Context, arg UpdateMovieCommentParams) (MovieComment, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UserDatum, error)
 }
 

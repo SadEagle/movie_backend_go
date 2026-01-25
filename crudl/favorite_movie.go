@@ -3,18 +3,18 @@ package crudl
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
-	db "movie_backend_go/db/sqlc"
+	"movie_backend_go/db/sqlc"
 )
 
-func CreateMovieFavorite(ctx context.Context, querier db.Querier, favMovieCreate db.CreateMovieFavoriteParams) (db.FavoriteMovie, error) {
+func CreateMovieFavorite(ctx context.Context, querier sqlc.Querier, favMovieCreate sqlc.CreateMovieFavoriteParams) (sqlc.FavoriteMovie, error) {
 	favMovie, err := querier.CreateMovieFavorite(ctx, favMovieCreate)
 	if err != nil {
-		return db.FavoriteMovie{}, err
+		return sqlc.FavoriteMovie{}, err
 	}
 	return favMovie, nil
 }
 
-func DeleteMovieFavorite(ctx context.Context, querier db.Querier, favMovieDelete db.DeleteMovieFavoriteParams) error {
+func DeleteMovieFavorite(ctx context.Context, querier sqlc.Querier, favMovieDelete sqlc.DeleteMovieFavoriteParams) error {
 	numDel, err := querier.DeleteMovieFavorite(ctx, favMovieDelete)
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func DeleteMovieFavorite(ctx context.Context, querier db.Querier, favMovieDelete
 	return nil
 }
 
-func GetMovieFavoriteList(ctx context.Context, querier db.Querier, userID pgtype.UUID) ([]pgtype.UUID, error) {
+func GetMovieFavoriteList(ctx context.Context, querier sqlc.Querier, userID pgtype.UUID) ([]pgtype.UUID, error) {
 	favMovieList, err := querier.GetMovieFavoriteList(ctx, userID)
 	if err != nil {
 		return []pgtype.UUID{}, err

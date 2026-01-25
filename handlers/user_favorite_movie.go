@@ -14,7 +14,7 @@ import (
 
 // @Summary      Get favorite movie list
 // @Description  Get user's favorite movie list
-// @Tags         favorite_movie
+// @Tags         favorite_movie, user
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"
@@ -46,7 +46,7 @@ func (ho *HandlerObj) GetFavoriteMovieListHandler(rw http.ResponseWriter, r *htt
 
 // @Summary      Add favorite movie
 // @Description  Add movie to user's favorite
-// @Tags         favorite_movie
+// @Tags         favorite_movie, user
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"
@@ -85,7 +85,7 @@ func (ho *HandlerObj) CreateMovieFavoriteHandler(rw http.ResponseWriter, r *http
 
 // @Summary      Delete favorite movie
 // @Description  Delete favorite movie
-// @Tags         favorite_movie
+// @Tags         favorite_movie, user
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"

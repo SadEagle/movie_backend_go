@@ -29,6 +29,15 @@ definitions:
       user_id:
         type: string
     type: object
+  reqmodel.MovieCommentListResp:
+    properties:
+      movie_comment_list:
+        items:
+          $ref: '#/definitions/sqlc.GetMovieCommentListRow'
+        type: array
+      movie_id:
+        type: string
+    type: object
   reqmodel.MovieListResponse:
     properties:
       movie_list:
@@ -56,6 +65,15 @@ definitions:
         type: string
       rating:
         type: integer
+    type: object
+  reqmodel.UserCommentListResp:
+    properties:
+      user_comment_list:
+        items:
+          $ref: '#/definitions/sqlc.GetUserCommentListRow'
+        type: array
+      user_id:
+        type: string
     type: object
   reqmodel.UserListResponse:
     properties:
@@ -93,12 +111,34 @@ definitions:
       title:
         type: string
     type: object
+  sqlc.GetMovieCommentListRow:
+    properties:
+      created_at:
+        $ref: '#/definitions/pgtype.Timestamp'
+      id:
+        type: string
+      text:
+        type: string
+      user_id:
+        type: string
+    type: object
   sqlc.GetMovieRatingListRow:
     properties:
       movie_id:
         type: string
       rating:
         type: integer
+    type: object
+  sqlc.GetUserCommentListRow:
+    properties:
+      created_at:
+        $ref: '#/definitions/pgtype.Timestamp'
+      id:
+        type: string
+      movie_id:
+        type: string
+      text:
+        type: string
     type: object
   sqlc.Movie:
     properties:
@@ -107,6 +147,19 @@ definitions:
       id:
         type: string
       title:
+        type: string
+    type: object
+  sqlc.MovieComment:
+    properties:
+      created_at:
+        $ref: '#/definitions/pgtype.Timestamp'
+      id:
+        type: string
+      movie_id:
+        type: string
+      text:
+        type: string
+      user_id:
         type: string
     type: object
   sqlc.RatedMovie:
@@ -123,8 +176,6 @@ definitions:
       created_at:
         $ref: '#/definitions/pgtype.Timestamp'
       id:
-        type: string
-      login:
         type: string
       name:
         type: string
@@ -204,11 +255,16 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete movie
+      description: Delete movie comment
       parameters:
       - description: Movie ID
         in: path
         name: movie_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
         required: true
         type: string
       produces:
@@ -228,9 +284,10 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Delete movie
+      summary: Delete movie comment
       tags:
       - movie
+      - movie_comment
     get:
       consumes:
       - application/json
@@ -301,6 +358,106 @@ paths:
       summary: Update movie
       tags:
       - movie
+  /movie/{movie_id}/comment:
+    get:
+      consumes:
+      - application/json
+      description: Get movie comments list
+      parameters:
+      - description: movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reqmodel.MovieCommentListResp'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get movie comments list
+      tags:
+      - movie
+      - movie_comment
+    patch:
+      consumes:
+      - application/json
+      description: Update movie comments list
+      parameters:
+      - description: movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sqlc.MovieComment'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update movie comments list
+      tags:
+      - movie
+      - movie_comment
+    post:
+      consumes:
+      - application/json
+      description: Create movie comments list
+      parameters:
+      - description: movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sqlc.MovieComment'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create movie comments list
+      tags:
+      - movie
+      - movie_comment
   /user:
     get:
       consumes:
@@ -474,6 +631,40 @@ paths:
       summary: Update user
       tags:
       - user
+  /user/{user_id}/comments:
+    get:
+      consumes:
+      - application/json
+      description: Get user's comment list
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reqmodel.UserCommentListResp'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user comment list
+      tags:
+      - user
+      - movie_comment
   /user/{user_id}/favorite_movie:
     get:
       consumes:
@@ -507,6 +698,7 @@ paths:
       summary: Get favorite movie list
       tags:
       - favorite_movie
+      - user
   /user/{user_id}/favorite_movie/{movie_id}:
     delete:
       consumes:
@@ -543,6 +735,7 @@ paths:
       summary: Delete favorite movie
       tags:
       - favorite_movie
+      - user
     post:
       consumes:
       - application/json
@@ -580,6 +773,7 @@ paths:
       summary: Add favorite movie
       tags:
       - favorite_movie
+      - user
   /user/{user_id}/rated_movie:
     get:
       consumes:
@@ -613,6 +807,7 @@ paths:
       summary: Get  movie rating
       tags:
       - rated_movie
+      - user
     patch:
       consumes:
       - application/json
@@ -651,6 +846,7 @@ paths:
       summary: Update movie rating
       tags:
       - rated_movie
+      - user
     post:
       consumes:
       - application/json
@@ -686,9 +882,10 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get  movie rating
+      summary: Rate movie
       tags:
       - rated_movie
+      - user
   /user/{user_id}/rated_movie/{movie_id}:
     delete:
       consumes:
@@ -725,4 +922,5 @@ paths:
       summary: Delete movie rating
       tags:
       - rated_movie
+      - user
 swagger: "2.0"

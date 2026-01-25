@@ -1,4 +1,6 @@
 FROM golang:tip-trixie AS go_build
+COPY ./go.mod ./go.sum ./
+RUN go mod download
 COPY ./. /backend_go
 WORKDIR /backend_go
 RUN go build -o backend_go

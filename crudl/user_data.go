@@ -2,20 +2,20 @@ package crudl
 
 import (
 	"context"
-	db "movie_backend_go/db/sqlc"
+	"movie_backend_go/db/sqlc"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func CreateUser(ctx context.Context, querier db.Querier, userCreate db.CreateUserParams) (db.UserDatum, error) {
+func CreateUser(ctx context.Context, querier sqlc.Querier, userCreate sqlc.CreateUserParams) (sqlc.UserDatum, error) {
 	user, err := querier.CreateUser(ctx, userCreate)
 	if err != nil {
-		return db.UserDatum{}, err
+		return sqlc.UserDatum{}, err
 	}
 	return user, nil
 }
 
-func DeleteUser(ctx context.Context, querier db.Querier, userID pgtype.UUID) error {
+func DeleteUser(ctx context.Context, querier sqlc.Querier, userID pgtype.UUID) error {
 	numDel, err := querier.DeleteUser(ctx, userID)
 	if err != nil {
 		return err
@@ -26,34 +26,34 @@ func DeleteUser(ctx context.Context, querier db.Querier, userID pgtype.UUID) err
 	return nil
 }
 
-func GetUserByID(ctx context.Context, querier db.Querier, userID pgtype.UUID) (db.UserDatum, error) {
+func GetUserByID(ctx context.Context, querier sqlc.Querier, userID pgtype.UUID) (sqlc.UserDatum, error) {
 	user, err := querier.GetUserByID(ctx, userID)
 	if err != nil {
-		return db.UserDatum{}, err
+		return sqlc.UserDatum{}, err
 	}
 	return user, nil
 }
 
-func GetUserByLogin(ctx context.Context, querier db.Querier, login string) (db.UserDatum, error) {
+func GetUserByLogin(ctx context.Context, querier sqlc.Querier, login string) (sqlc.UserDatum, error) {
 	user, err := querier.GetUserByLogin(ctx, login)
 	if err != nil {
-		return db.UserDatum{}, err
+		return sqlc.UserDatum{}, err
 	}
 	return user, nil
 }
 
-func GetUserList(ctx context.Context, querier db.Querier) ([]db.UserDatum, error) {
+func GetUserList(ctx context.Context, querier sqlc.Querier) ([]sqlc.UserDatum, error) {
 	userList, err := querier.GetUserList(ctx)
 	if err != nil {
-		return []db.UserDatum{}, err
+		return []sqlc.UserDatum{}, err
 	}
 	return userList, nil
 }
 
-func UpdateUser(ctx context.Context, querier db.Querier, userUpdate db.UpdateUserParams) (db.UserDatum, error) {
+func UpdateUser(ctx context.Context, querier sqlc.Querier, userUpdate sqlc.UpdateUserParams) (sqlc.UserDatum, error) {
 	user, err := querier.UpdateUser(ctx, userUpdate)
 	if err != nil {
-		return db.UserDatum{}, err
+		return sqlc.UserDatum{}, err
 	}
 	return user, nil
 }

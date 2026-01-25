@@ -19,7 +19,7 @@ RETURNING id, name, login, password, is_admin, created_at
 
 type CreateUserParams struct {
 	Name     string `json:"name"`
-	Login    string `json:"login"`
+	Login    string `json:"-"`
 	Password string `json:"-"`
 }
 
@@ -134,7 +134,7 @@ RETURNING id, name, login, password, is_admin, created_at
 type UpdateUserParams struct {
 	ID       pgtype.UUID `json:"id"`
 	Name     *string     `json:"name"`
-	Login    *string     `json:"login"`
+	Login    *string     `json:"-"`
 	Password *string     `json:"-"`
 }
 

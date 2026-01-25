@@ -16,7 +16,7 @@ import (
 
 // @Summary			 Get  movie rating
 // @Description  Get movie rating by user id
-// @Tags         rated_movie
+// @Tags         rated_movie, user
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"
@@ -48,7 +48,7 @@ func (ho *HandlerObj) GetRatedMovieListHandler(rw http.ResponseWriter, r *http.R
 
 // @Summary			 Rate movie
 // @Description  Rate movie
-// @Tags         rated_movie
+// @Tags         rated_movie, user
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"
@@ -90,7 +90,7 @@ func (ho *HandlerObj) CreateRatedMovieHandler(rw http.ResponseWriter, r *http.Re
 
 // @Summary			 Update movie rating
 // @Description  Update movie rating
-// @Tags         rated_movie
+// @Tags         rated_movie, user
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"
@@ -132,7 +132,7 @@ func (ho *HandlerObj) UpdateRatedMovieHandler(rw http.ResponseWriter, r *http.Re
 
 // @Summary			 Delete movie rating
 // @Description  Delete certain movie rating
-// @Tags         rated_movie
+// @Tags         rated_movie, user
 // @Accept       json
 // @Produce      json
 // @Param        user_id   	path      string  true  "User ID"

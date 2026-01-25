@@ -19,6 +19,14 @@ type Movie struct {
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
+type MovieComment struct {
+	ID        pgtype.UUID      `json:"id"`
+	UserID    pgtype.UUID      `json:"user_id"`
+	MovieID   pgtype.UUID      `json:"movie_id"`
+	Text      string           `json:"text"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+}
+
 type MovieRatingView struct {
 	MovieID     pgtype.UUID `json:"movie_id"`
 	AmountRates int64       `json:"amount_rates"`
@@ -34,7 +42,7 @@ type RatedMovie struct {
 type UserDatum struct {
 	ID        pgtype.UUID      `json:"id"`
 	Name      string           `json:"name"`
-	Login     string           `json:"login"`
+	Login     string           `json:"-"`
 	Password  string           `json:"-"`
 	IsAdmin   bool             `json:"-"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`

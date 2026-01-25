@@ -2,7 +2,7 @@ package reqmodel
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
-	db "movie_backend_go/db/sqlc"
+	"movie_backend_go/db/sqlc"
 )
 
 type FavoriteMovieListResponse struct {
@@ -15,11 +15,26 @@ type MovieRequest struct {
 	Title string `json:"title"`
 }
 
+type MovieCommentRequest struct {
+	UserID pgtype.UUID `json:"user_id"`
+	Text   string      `json:"text"`
+}
+
+type UserCommentListResp struct {
+	UserID          pgtype.UUID                  `json:"user_id"`
+	UserCommentList []sqlc.GetUserCommentListRow `json:"user_comment_list"`
+}
+
+type MovieCommentListResp struct {
+	MovieID          pgtype.UUID                   `json:"movie_id"`
+	MovieCommentList []sqlc.GetMovieCommentListRow `json:"movie_comment_list"`
+}
+
 type MovieUpdateRequest struct {
 	Title *string `json:"title"`
 }
 type MovieListResponse struct {
-	MovieList []db.Movie `json:"movie_list"`
+	MovieList []sqlc.Movie `json:"movie_list"`
 }
 
 type RatedMovieRequest struct {
@@ -33,8 +48,8 @@ type RatedMovieUpdateRequest struct {
 }
 
 type RatedMovieListResponse struct {
-	UserID         pgtype.UUID                `json:"user_id"`
-	RatedMovieList []db.GetMovieRatingListRow `json:"rated_movie_list"`
+	UserID         pgtype.UUID                  `json:"user_id"`
+	RatedMovieList []sqlc.GetMovieRatingListRow `json:"rated_movie_list"`
 }
 
 type UserRequest struct {
@@ -49,5 +64,5 @@ type UserUpdateRequest struct {
 }
 
 type UserListResponse struct {
-	UserList []db.UserDatum `json:"user_list"`
+	UserList []sqlc.UserDatum `json:"user_list"`
 }
