@@ -12,6 +12,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+
 	"github.com/swaggo/http-swagger/v2"
 )
 
@@ -58,43 +61,46 @@ func main() {
 	}
 	go ping_db_check()
 
-	mux := http.NewServeMux()
+	// mux := http.NewServeMux()
 	handlerObj := handlers.HandlerObj{DBPool: queries, Log: log.Default()}
 
+	r := chi.NewMux()
+	r.Use(middleware.Logger)
+
 	// user
-	mux.HandleFunc("GET /user/{user_id}", handlerObj.GetUserHandler)
-	mux.HandleFunc("GET /user", handlerObj.GetUserListHandler)
-	mux.HandleFunc("POST /user", handlerObj.CreateUserHandler)
-	mux.HandleFunc("PATCH /user/{user_id}", handlerObj.UpdateUserHandler)
-	mux.HandleFunc("DELETE /user/{user_id}", handlerObj.DeleteUserHandler)
+	r.Get("/user/{user_id}", handlerObj.GetUserHandler)
+	r.Get("/user", handlerObj.GetUserListHandler)
+	r.Post("/user", handlerObj.CreateUserHandler)
+	r.Patch("/user/{user_id}", handlerObj.UpdateUserHandler)
+	r.Delete("/user/{user_id}", handlerObj.DeleteUserHandler)
 	// rating
-	mux.HandleFunc("GET /user/{user_id}/rating", handlerObj.GetRatedMovieListHandler)
-	mux.HandleFunc("POST /user/{user_id}/rating", handlerObj.CreateRatedMovieHandler)
-	mux.HandleFunc("PATCH /user/{user_id}/rating", handlerObj.UpdateRatedMovieHandler)
-	mux.HandleFunc("DELETE /user/{user_id}/rating/{movie_id}", handlerObj.DeleteRatedMovieHandler)
+	r.Get("/user/{user_id}/rating", handlerObj.GetRatedMovieListHandler)
+	r.Post("/user/{user_id}/rating", handlerObj.CreateRatedMovieHandler)
+	r.Patch("/user/{user_id}/rating", handlerObj.UpdateRatedMovieHandler)
+	r.Delete("/user/{user_id}/rating/{movie_id}", handlerObj.DeleteRatedMovieHandler)
 	// fav
-	mux.HandleFunc("GET /user/{user_id}/favorite_movie", handlerObj.GetFavoriteMovieListHandler)
-	mux.HandleFunc("POST /user/{user_id}/favorite_movie", handlerObj.CreateMovieFavoriteHandler)
-	mux.HandleFunc("PATCH /user/{user_id}/favorite_movie", handlerObj.UpdateMovieHandler)
-	mux.HandleFunc("DELETE /user/{user_id}/favorite_movie/{movie_id}", handlerObj.DeleteFavoriteMovieHandler)
+	r.Get("/user/{user_id}/favorite_movie", handlerObj.GetFavoriteMovieListHandler)
+	r.Post("/user/{user_id}/favorite_movie", handlerObj.CreateMovieFavoriteHandler)
+	r.Patch("/user/{user_id}/favorite_movie", handlerObj.UpdateMovieHandler)
+	r.Delete("/user/{user_id}/favorite_movie/{movie_id}", handlerObj.DeleteFavoriteMovieHandler)
 	// comment
-	mux.HandleFunc("GET /user/{user_id}/comment", handlerObj.GetMovieCommentListHandler)
-	mux.HandleFunc("POST /user/{user_id}/comment", handlerObj.CreateMovieCommentHandler)
-	mux.HandleFunc("PATCH /user/{user_id}/comment", handlerObj.UpdateMovieCommentHandler)
-	mux.HandleFunc("DELETE /user/{user_id}/comment", handlerObj.DeleteMovieCommentHandler)
+	r.Get("/user/{user_id}/comment", handlerObj.GetMovieCommentListHandler)
+	r.Post("/user/{user_id}/comment", handlerObj.CreateMovieCommentHandler)
+	r.Patch("/user/{user_id}/comment", handlerObj.UpdateMovieCommentHandler)
+	r.Delete("/user/{user_id}/comment", handlerObj.DeleteMovieCommentHandler)
 	// movie
-	mux.HandleFunc("GET /movie/{movie_id}", handlerObj.GetMovieHandler)
-	mux.HandleFunc("GET /movie", handlerObj.GetMovieListHandler)
-	mux.HandleFunc("POST /movie", handlerObj.CreateMovieHandler)
-	mux.HandleFunc("PATCH /movie/{movie_id}", handlerObj.UpdateMovieHandler)
-	mux.HandleFunc("DELETE /movie/{movie_id}", handlerObj.DeleteMovieHandler)
+	r.Get("/movie/{movie_id}", handlerObj.GetMovieHandler)
+	r.Get("/movie", handlerObj.GetMovieListHandler)
+	r.Post("/movie", handlerObj.CreateMovieHandler)
+	r.Patch("/movie/{movie_id}", handlerObj.UpdateMovieHandler)
+	r.Delete("/movie/{movie_id}", handlerObj.DeleteMovieHandler)
 	// comment
-	mux.HandleFunc("GET /movie/{movie_id}/comment", handlerObj.GetMovieCommentListHandler)
+	r.Get("/movie/{movie_id}/comment", handlerObj.GetMovieCommentListHandler)
 
 	// System specific commands
-	mux.Handle("GET /healthcheck", handlers.CheckHealthHandlerCreate(dbPool))
+	r.Get("/healthcheck", handlers.CheckHealthHandlerCreate(dbPool))
 	// Swagger
-	mux.HandleFunc("GET /swagger/", httpSwagger.WrapHandler)
+	r.Get("/swagger/", httpSwagger.WrapHandler)
 
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

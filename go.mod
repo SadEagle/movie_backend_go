@@ -3,6 +3,7 @@ module movie_backend_go
 go 1.25.4
 
 require (
+	github.com/go-chi/chi/v5 v5.2.4
 	github.com/jackc/pgx/v5 v5.5.4
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.6
