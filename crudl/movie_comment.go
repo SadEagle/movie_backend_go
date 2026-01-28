@@ -9,10 +9,7 @@ import (
 
 func CreateMovieComment(ctx context.Context, querier sqlc.Querier, movieCommentCreate sqlc.CreateMovieCommentParams) (sqlc.MovieComment, error) {
 	movieComment, err := querier.CreateMovieComment(ctx, movieCommentCreate)
-	if err != nil {
-		return sqlc.MovieComment{}, err
-	}
-	return movieComment, nil
+	return movieComment, err
 }
 
 func DeleteMovieComment(ctx context.Context, querier sqlc.Querier, movieCommentDelete sqlc.DeleteMovieCommentParams) error {
@@ -21,31 +18,22 @@ func DeleteMovieComment(ctx context.Context, querier sqlc.Querier, movieCommentD
 		return err
 	}
 	if numDel == 0 {
-		return EmptyDeletionError
+		return ErrEmptyDeletion
 	}
 	return nil
 }
 
 func GetMovieCommentList(ctx context.Context, querier sqlc.Querier, movieID pgtype.UUID) ([]sqlc.GetMovieCommentListRow, error) {
 	movieCommentList, err := querier.GetMovieCommentList(ctx, movieID)
-	if err != nil {
-		return nil, err
-	}
-	return movieCommentList, nil
+	return movieCommentList, err
 }
 
 func GetUserCommentList(ctx context.Context, querier sqlc.Querier, userID pgtype.UUID) ([]sqlc.GetUserCommentListRow, error) {
 	userCommentList, err := querier.GetUserCommentList(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-	return userCommentList, nil
+	return userCommentList, err
 }
 
 func UpdateMovieComment(ctx context.Context, querier sqlc.Querier, movieCommentUpdate sqlc.UpdateMovieCommentParams) (sqlc.MovieComment, error) {
 	movieComment, err := querier.UpdateMovieComment(ctx, movieCommentUpdate)
-	if err != nil {
-		return sqlc.MovieComment{}, nil
-	}
-	return movieComment, nil
+	return movieComment, err
 }

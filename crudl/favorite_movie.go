@@ -6,29 +6,23 @@ import (
 	"movie_backend_go/db/sqlc"
 )
 
-func CreateMovieFavorite(ctx context.Context, querier sqlc.Querier, favMovieCreate sqlc.CreateMovieFavoriteParams) (sqlc.FavoriteMovie, error) {
-	favMovie, err := querier.CreateMovieFavorite(ctx, favMovieCreate)
-	if err != nil {
-		return sqlc.FavoriteMovie{}, err
-	}
-	return favMovie, nil
+func CreateFavoriteMovie(ctx context.Context, querier sqlc.Querier, favMovieCreate sqlc.CreateFavoriteMovieParams) (sqlc.FavoriteMovie, error) {
+	favMovie, err := querier.CreateFavoriteMovie(ctx, favMovieCreate)
+	return favMovie, err
 }
 
-func DeleteMovieFavorite(ctx context.Context, querier sqlc.Querier, favMovieDelete sqlc.DeleteMovieFavoriteParams) error {
-	numDel, err := querier.DeleteMovieFavorite(ctx, favMovieDelete)
+func DeleteFavoriteMovie(ctx context.Context, querier sqlc.Querier, favMovieDelete sqlc.DeleteFavoriteMovieParams) error {
+	numDel, err := querier.DeleteFavoriteMovie(ctx, favMovieDelete)
 	if err != nil {
 		return err
 	}
 	if numDel == 0 {
-		return EmptyDeletionError
+		return ErrEmptyDeletion
 	}
 	return nil
 }
 
-func GetMovieFavoriteList(ctx context.Context, querier sqlc.Querier, userID pgtype.UUID) ([]pgtype.UUID, error) {
-	favMovieList, err := querier.GetMovieFavoriteList(ctx, userID)
-	if err != nil {
-		return []pgtype.UUID{}, err
-	}
-	return favMovieList, nil
+func GetFavoriteMovieList(ctx context.Context, querier sqlc.Querier, userID pgtype.UUID) ([]pgtype.UUID, error) {
+	favMovieIDList, err := querier.GetFavoriteMovieIDList(ctx, userID)
+	return favMovieIDList, err
 }
