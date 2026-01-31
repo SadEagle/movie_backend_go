@@ -18,11 +18,11 @@ import (
 	"github.com/swaggo/http-swagger/v2"
 )
 
-// @title           movie_backend_go
-// @version         1.0
-// @description     Basic swagger for current api
-// @termsOfService  http://swagger.io/terms/
-// @host      localhost:8080
+// @title           					movie_backend_go
+// @version         					1.0
+// @description     					Basic swagger for current api
+// @termsOfService  					http://swagger.io/terms/
+// @host      								localhost:8080
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
@@ -64,8 +64,11 @@ func main() {
 	// mux := http.NewServeMux()
 	handlerObj := handlers.HandlerObj{DBPool: queries, Log: log.Default()}
 
-	r := chi.NewMux()
+	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	//auth
+	r.Post("/auth/login", handlerObj.LoginHandler)
 
 	// user
 	r.Get("/user/{user_id}", handlerObj.GetUserHandler)
@@ -73,34 +76,37 @@ func main() {
 	r.Post("/user", handlerObj.CreateUserHandler)
 	r.Patch("/user/{user_id}", handlerObj.UpdateUserHandler)
 	r.Delete("/user/{user_id}", handlerObj.DeleteUserHandler)
-	// rating
-	r.Get("/user/{user_id}/rating", handlerObj.GetRatedMovieListHandler)
-	r.Post("/user/{user_id}/rating", handlerObj.CreateRatedMovieHandler)
-	r.Patch("/user/{user_id}/rating", handlerObj.UpdateRatedMovieHandler)
-	r.Delete("/user/{user_id}/rating/{movie_id}", handlerObj.DeleteRatedMovieHandler)
-	// fav
-	r.Get("/user/{user_id}/favorite_movie", handlerObj.GetFavoriteMovieListHandler)
-	r.Post("/user/{user_id}/favorite_movie", handlerObj.CreateMovieFavoriteHandler)
-	r.Patch("/user/{user_id}/favorite_movie", handlerObj.UpdateMovieHandler)
-	r.Delete("/user/{user_id}/favorite_movie/{movie_id}", handlerObj.DeleteFavoriteMovieHandler)
-	// comment
-	r.Get("/user/{user_id}/comment", handlerObj.GetMovieCommentListHandler)
-	r.Post("/user/{user_id}/comment", handlerObj.CreateMovieCommentHandler)
-	r.Patch("/user/{user_id}/comment", handlerObj.UpdateMovieCommentHandler)
-	r.Delete("/user/{user_id}/comment", handlerObj.DeleteMovieCommentHandler)
+
+	r.Get("/user/{user_id}/comment", handlerObj.GetUserCommentListHandler)
+	r.Get("/user/{user_id}/rating", handlerObj.GetUserRatingListHandler)
+	r.Get("/user/{user_id}/favorite", handlerObj.GetUserFavoriteListHandler)
+
 	// movie
-	r.Get("/movie/{movie_id}", handlerObj.GetMovieHandler)
 	r.Get("/movie", handlerObj.GetMovieListHandler)
 	r.Post("/movie", handlerObj.CreateMovieHandler)
+	r.Get("/movie/{movie_id}", handlerObj.GetMovieHandler)
 	r.Patch("/movie/{movie_id}", handlerObj.UpdateMovieHandler)
 	r.Delete("/movie/{movie_id}", handlerObj.DeleteMovieHandler)
-	// comment
+
 	r.Get("/movie/{movie_id}/comment", handlerObj.GetMovieCommentListHandler)
+	r.Get("/movie/{movie_id}/rating", handlerObj.GetMovieRatingListHandler)
+	r.Get("/movie/{movie_id}/favorite", handlerObj.GetMovieFavoriteListHandler)
+
+	// rating
+	r.Get("/rating", handlerObj.GetRatingHandler)
+	r.Post("/rating", handlerObj.CreateRatingHandler)
+	r.Patch("/rating", handlerObj.UpdateRatingHandler)
+	r.Delete("/rating", handlerObj.DeleteRatingHandler)
+
+	// favorite
+	r.Get("/favorite", handlerObj.GetFavoriteHandler)
+	r.Post("/favorite", handlerObj.CreateFavoriteHandler)
+	r.Delete("/favorite", handlerObj.DeleteFavoriteHandler)
 
 	// System specific commands
 	r.Get("/healthcheck", handlers.CheckHealthHandlerCreate(dbPool))
 	// Swagger
-	r.Get("/swagger/", httpSwagger.WrapHandler)
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

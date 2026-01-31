@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"movie_backend_go/crudl"
 	"movie_backend_go/db/sqlc"
@@ -14,7 +13,31 @@ import (
 	"movie_backend_go/reqmodel"
 )
 
-// @Summary      Show movie
+// @Summary      Get movie list
+// @Description  Get all movie list
+// @Tags         movie
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  reqmodel.MovieListResponse
+// @Failure      404  {object}	map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /movie [get]
+func (ho *HandlerObj) GetMovieListHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)
+	defer close()
+
+	movieList, err := crudl.GetMovieList(ctx, ho.DBPool)
+	if err != nil {
+		ho.Log.Println(err)
+		http.Error(rw, "Can't get movie list", http.StatusBadRequest)
+		return
+	}
+
+	movieListResponse := reqmodel.MovieListResponse{MovieList: movieList}
+	writeResponseBody(rw, movieListResponse, "movie")
+}
+
+// @Summary      Get movie
 // @Description  Get movie by id
 // @Tags         movie
 // @Accept       json
@@ -36,37 +59,11 @@ func (ho *HandlerObj) GetMovieHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 	movie, err := crudl.GetMovieByID(ctx, ho.DBPool, movieID)
 	if err != nil {
-		ho.Log.Println(fmt.Errorf("get movie by id: %w", err))
+		ho.Log.Printf("get movie by id %v: %v", movieID, err)
 		http.Error(rw, "Can't get movie by id", http.StatusBadRequest)
 		return
 	}
-
 	writeResponseBody(rw, movie, "movie")
-
-}
-
-// @Summary      Show movie list
-// @Description  Get movie list
-// @Tags         movie
-// @Accept       json
-// @Produce      json
-// @Success      200  {object}  reqmodel.MovieListResponse
-// @Failure      404  {object}	map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /movie [get]
-func (ho *HandlerObj) GetMovieListHandler(rw http.ResponseWriter, r *http.Request) {
-	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)
-	defer close()
-
-	movieList, err := crudl.GetMovieList(ctx, ho.DBPool)
-	if err != nil {
-		ho.Log.Println(err)
-		http.Error(rw, "Can't get movie list", http.StatusBadRequest)
-		return
-	}
-
-	movieListResponse := reqmodel.MovieListResponse{MovieList: movieList}
-	writeResponseBody(rw, movieListResponse, "movie")
 }
 
 // @Summary      Update movie
@@ -90,7 +87,7 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 	var updateMovie reqmodel.MovieUpdateRequest
 	err := decoder.Decode(&updateMovie)
 	if err != nil && err != io.EOF {
-		ho.Log.Println(fmt.Errorf("proceed body request: %w", err))
+		ho.Log.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -105,7 +102,7 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 	movieUpdate := sqlc.UpdateMovieParams{ID: movieID, Title: updateMovie.Title}
 	movie, err := ho.DBPool.UpdateMovie(ctx, movieUpdate)
 	if err != nil {
-		ho.Log.Println(fmt.Errorf("proceed body request: %w", err))
+		ho.Log.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -113,7 +110,6 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 }
 
 // @Summary      Create movie
-// @Description  Create movie
 // @Tags         movie
 // @Accept       json
 // @Produce      json
@@ -131,7 +127,7 @@ func (ho *HandlerObj) CreateMovieHandler(rw http.ResponseWriter, r *http.Request
 	var movieCreate reqmodel.MovieRequest
 	err := decoder.Decode(&movieCreate)
 	if err != nil && err != io.EOF {
-		ho.Log.Println(fmt.Errorf("proceed body request: %w", err))
+		ho.Log.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -144,11 +140,10 @@ func (ho *HandlerObj) CreateMovieHandler(rw http.ResponseWriter, r *http.Request
 	}
 
 	rw.WriteHeader(http.StatusCreated)
-	writeResponseBody(rw, movie, "movie list")
+	writeResponseBody(rw, movie, "movie")
 }
 
 // @Summary      Delete movie
-// @Description  Delete movie
 // @Tags         movie
 // @Accept       json
 // @Produce      json
@@ -169,7 +164,7 @@ func (ho *HandlerObj) DeleteMovieHandler(rw http.ResponseWriter, r *http.Request
 	}
 
 	if err := crudl.DeleteMovie(ctx, ho.DBPool, movieID); err != nil {
-		ho.Log.Println(fmt.Errorf("proceed delete movie request"))
+		ho.Log.Println("proceed delete movie request")
 		http.Error(rw, "Can't delete movie", http.StatusNotFound)
 		return
 	}

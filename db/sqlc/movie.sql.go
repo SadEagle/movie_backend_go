@@ -43,7 +43,7 @@ FROM (
   select id, title, created_at from movie where id = $1
   ) m
 LEFT JOIN ( 
-  select movie_id, amount_rates, rating from movie_rating_view where movie_id = $1
+  select movie_id, amount_rates, rating from total_rating_mview where movie_id = $1
 ) mrv ON m.id = mrv.movie_id
 `
 
@@ -73,7 +73,7 @@ SELECT id, title, COALESCE(amount_rates, 0), COALESCE(rating, 0), created_at
 FROM (
   select id, title, created_at from movie where title = $1
   ) m
-LEFT JOIN movie_rating_view ON m.id = mrv.movie_id
+LEFT JOIN total_rating_mview ON m.id = mrv.movie_id
 `
 
 type GetMovieByTitleRow struct {

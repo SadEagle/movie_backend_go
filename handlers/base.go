@@ -14,7 +14,7 @@ const OpTimeContext = 5 * time.Minute
 const CheckHealthTimeContext = 2 * time.Minute
 
 type HandlerObj struct {
-	DBPool sqlc.Querier
+	DBPool *sqlc.Queries
 	Log    *log.Logger
 }
 
@@ -24,7 +24,7 @@ func writeResponseBody(rw http.ResponseWriter, responseByteObj any, responseObjN
 	err := enc.Encode(responseByteObj)
 	if err != nil {
 		log.Println(err)
-		http.Error(rw, fmt.Sprintf("Can't send %s data", responseObjName), http.StatusInternalServerError)
+		http.Error(rw, fmt.Sprintf("can't send %s data", responseObjName), http.StatusInternalServerError)
 		return
 	}
 }

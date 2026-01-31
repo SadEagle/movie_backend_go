@@ -7,11 +7,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func IsLoginUserExist(ctx context.Context, querier sqlc.Querier, loginUser sqlc.IsLoginUserExistParams) (bool, error) {
-	isExist, err := querier.IsLoginUserExist(ctx, loginUser)
-	return isExist, err
-}
-
 func CreateUser(ctx context.Context, querier sqlc.Querier, userCreate sqlc.CreateUserParams) (sqlc.UserDatum, error) {
 	user, err := querier.CreateUser(ctx, userCreate)
 	return user, err

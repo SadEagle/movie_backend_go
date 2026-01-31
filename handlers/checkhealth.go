@@ -7,6 +7,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// @Summary      Dummy healthcheck
+// @Description  Healtcheck dummy output
+// @Tags         healthcheck
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  sqlc.GetMovieByIDRow
+// @Failure      503  {object}  map[string]string
+// @Router       /healthcheck [get]
 func CheckHealthHandlerCreate(pool *pgxpool.Pool) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), CheckHealthTimeContext)

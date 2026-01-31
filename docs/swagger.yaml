@@ -1,4 +1,39 @@
 definitions:
+  oauth2.Token:
+    properties:
+      access_token:
+        description: |-
+          AccessToken is the token that authorizes and authenticates
+          the requests.
+        type: string
+      expires_in:
+        description: |-
+          ExpiresIn is the OAuth2 wire format "expires_in" field,
+          which specifies how many seconds later the token expires,
+          relative to an unknown time base approximately around "now".
+          It is the application's responsibility to populate
+          `Expiry` from `ExpiresIn` when required.
+        type: integer
+      expiry:
+        description: |-
+          Expiry is the optional expiration time of the access token.
+
+          If zero, [TokenSource] implementations will reuse the same
+          token forever and RefreshToken or equivalent
+          mechanisms for that TokenSource will not be used.
+        type: string
+      refresh_token:
+        description: |-
+          RefreshToken is a token that's used by the application
+          (as opposed to the user) to refresh the access token
+          if it expires.
+        type: string
+      token_type:
+        description: |-
+          TokenType is the type of token.
+          The Type method returns either this or "Bearer", the default.
+        type: string
+    type: object
   pgtype.InfinityModifier:
     enum:
     - 1
@@ -20,20 +55,41 @@ definitions:
       valid:
         type: boolean
     type: object
-  reqmodel.FavoriteMovieListResponse:
+  reqmodel.CommentCreateRequest:
     properties:
-      favorite_movie_ids:
-        items:
-          type: string
-        type: array
+      movie_id:
+        type: string
+      text:
+        type: string
       user_id:
         type: string
     type: object
-  reqmodel.MovieCommentListResp:
+  reqmodel.CommentRequest:
+    properties:
+      text:
+        type: string
+    type: object
+  reqmodel.FavoriteRequest:
+    properties:
+      movie_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  reqmodel.MovieCommentListResponse:
     properties:
       movie_comment_list:
         items:
           $ref: '#/definitions/sqlc.GetMovieCommentListRow'
+        type: array
+      movie_id:
+        type: string
+    type: object
+  reqmodel.MovieFavoriteListResponse:
+    properties:
+      favorite_movie_ids:
+        items:
+          type: string
         type: array
       movie_id:
         type: string
@@ -45,32 +101,59 @@ definitions:
           $ref: '#/definitions/sqlc.Movie'
         type: array
     type: object
+  reqmodel.MovieRatingListResponse:
+    properties:
+      movie_id:
+        type: string
+      movie_rating_list:
+        items:
+          $ref: '#/definitions/sqlc.GetMovieRatingListRow'
+        type: array
+    type: object
   reqmodel.MovieRequest:
     properties:
       title:
         type: string
     type: object
-  reqmodel.RatedMovieListResponse:
-    properties:
-      rated_movie_list:
-        items:
-          $ref: '#/definitions/sqlc.GetMovieRatingListRow'
-        type: array
-      user_id:
-        type: string
-    type: object
-  reqmodel.RatedMovieRequest:
+  reqmodel.RatingCreateRequest:
     properties:
       movie_id:
         type: string
       rating:
         type: integer
+      user_id:
+        type: string
     type: object
-  reqmodel.UserCommentListResp:
+  reqmodel.RatingIDRequest:
+    properties:
+      movie_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  reqmodel.RatingUpdateRequest:
+    properties:
+      movie_id:
+        type: string
+      rating:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  reqmodel.UserCommentListResponse:
     properties:
       user_comment_list:
         items:
           $ref: '#/definitions/sqlc.GetUserCommentListRow'
+        type: array
+      user_id:
+        type: string
+    type: object
+  reqmodel.UserFavoriteListResponse:
+    properties:
+      favorite_user_ids:
+        items:
+          type: string
         type: array
       user_id:
         type: string
@@ -82,6 +165,15 @@ definitions:
           $ref: '#/definitions/sqlc.UserDatum'
         type: array
     type: object
+  reqmodel.UserRatingListResponse:
+    properties:
+      user_id:
+        type: string
+      user_rating_list:
+        items:
+          $ref: '#/definitions/sqlc.GetUserRatingListRow'
+        type: array
+    type: object
   reqmodel.UserRequest:
     properties:
       login:
@@ -91,7 +183,20 @@ definitions:
       password:
         type: string
     type: object
-  sqlc.FavoriteMovie:
+  sqlc.Comment:
+    properties:
+      created_at:
+        $ref: '#/definitions/pgtype.Timestamp'
+      id:
+        type: string
+      movie_id:
+        type: string
+      text:
+        type: string
+      user_id:
+        type: string
+    type: object
+  sqlc.Favorite:
     properties:
       movie_id:
         type: string
@@ -140,6 +245,13 @@ definitions:
       text:
         type: string
     type: object
+  sqlc.GetUserRatingListRow:
+    properties:
+      movie_id:
+        type: string
+      rating:
+        type: integer
+    type: object
   sqlc.Movie:
     properties:
       created_at:
@@ -149,20 +261,7 @@ definitions:
       title:
         type: string
     type: object
-  sqlc.MovieComment:
-    properties:
-      created_at:
-        $ref: '#/definitions/pgtype.Timestamp'
-      id:
-        type: string
-      movie_id:
-        type: string
-      text:
-        type: string
-      user_id:
-        type: string
-    type: object
-  sqlc.RatedMovie:
+  sqlc.Rating:
     properties:
       movie_id:
         type: string
@@ -191,11 +290,299 @@ info:
   title: movie_backend_go
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Get movie by id
+      parameters:
+      - description: Login
+        in: formData
+        name: login
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/oauth2.Token'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Auth
+      tags:
+      - auth
+  /comment:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Comment create data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.CommentCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sqlc.Comment'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create comments
+      tags:
+      - comment
+  /comment/{comment_id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Movie ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete comment
+      tags:
+      - comment
+    get:
+      consumes:
+      - application/json
+      description: Get comment by id
+      parameters:
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sqlc.Comment'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get comment
+      tags:
+      - comment
+  /comment/{commentID}:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: movie ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      - description: Comment update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.CommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sqlc.Comment'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update comments
+      tags:
+      - comment
+  /favorite:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Comment delete data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.FavoriteRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete favorite
+      tags:
+      - favorite
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Comment update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.FavoriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sqlc.Favorite'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get favorite
+      tags:
+      - favorite
+    post:
+      consumes:
+      - application/json
+      description: Add movie to user's favorite
+      parameters:
+      - description: Comment update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.FavoriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sqlc.Favorite'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add favorite movie
+      tags:
+      - favorite
+  /healthcheck:
+    get:
+      consumes:
+      - application/json
+      description: Healtcheck dummy output
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sqlc.GetMovieByIDRow'
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Dummy healthcheck
+      tags:
+      - healthcheck
   /movie:
     get:
       consumes:
       - application/json
-      description: Get movie list
+      description: Get all movie list
       produces:
       - application/json
       responses:
@@ -215,13 +602,12 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Show movie list
+      summary: Get movie list
       tags:
       - movie
     post:
       consumes:
       - application/json
-      description: Create movie
       parameters:
       - description: Movie creation data
         in: body
@@ -255,16 +641,10 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete movie comment
       parameters:
       - description: Movie ID
         in: path
         name: movie_id
-        required: true
-        type: string
-      - description: User ID
-        in: path
-        name: user_id
         required: true
         type: string
       produces:
@@ -284,10 +664,9 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Delete movie comment
+      summary: Delete movie
       tags:
       - movie
-      - movie_comment
     get:
       consumes:
       - application/json
@@ -317,7 +696,7 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Show movie
+      summary: Get movie
       tags:
       - movie
     patch:
@@ -362,9 +741,9 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get movie comments list
+      description: Get comment list for certain movie
       parameters:
-      - description: movie ID
+      - description: Movie ID
         in: path
         name: movie_id
         required: true
@@ -375,7 +754,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/reqmodel.MovieCommentListResp'
+            $ref: '#/definitions/reqmodel.MovieCommentListResponse'
         "404":
           description: Not Found
           schema:
@@ -390,25 +769,119 @@ paths:
             type: object
       summary: Get movie comments list
       tags:
+      - comment
       - movie
-      - movie_comment
+  /movie/{movie_id}/rating:
+    get:
+      consumes:
+      - application/json
+      description: Get users who rated movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reqmodel.MovieRatingListResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get movie rating list
+      tags:
+      - rating
+      - movie
+  /movie/{user_id}/favorite:
+    get:
+      consumes:
+      - application/json
+      description: Get list users who marked this movie as favorite
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reqmodel.MovieFavoriteListResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get movie favorite list
+      tags:
+      - favorite
+      - movie
+  /rating:
+    delete:
+      consumes:
+      - application/json
+      description: Delete certain rating
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete rating
+      tags:
+      - rating
     patch:
       consumes:
       - application/json
-      description: Update movie comments list
+      description: Update rating
       parameters:
-      - description: movie ID
-        in: path
-        name: movie_id
+      - description: Updated rating
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/reqmodel.RatingUpdateRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sqlc.MovieComment'
+            $ref: '#/definitions/sqlc.Rating'
         "404":
           description: Not Found
           schema:
@@ -421,27 +894,32 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Update movie comments list
+      summary: Update rating
       tags:
-      - movie
-      - movie_comment
+      - rating
     post:
       consumes:
       - application/json
-      description: Create movie comments list
+      description: Rate movie by user
       parameters:
-      - description: movie ID
+      - description: User ID
         in: path
-        name: movie_id
+        name: user_id
         required: true
         type: string
+      - description: Rate movie data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.RatingCreateRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sqlc.MovieComment'
+            $ref: '#/definitions/sqlc.Rating'
         "404":
           description: Not Found
           schema:
@@ -454,10 +932,9 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Create movie comments list
+      summary: Create rating
       tags:
-      - movie
-      - movie_comment
+      - rating
   /user:
     get:
       consumes:
@@ -488,7 +965,6 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create user
       parameters:
       - description: User creation data
         in: body
@@ -528,7 +1004,6 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete user
       parameters:
       - description: User ID
         in: path
@@ -631,11 +1106,11 @@ paths:
       summary: Update user
       tags:
       - user
-  /user/{user_id}/comments:
+  /user/{user_id}/comment:
     get:
       consumes:
       - application/json
-      description: Get user's comment list
+      description: Get comment list for certain user
       parameters:
       - description: User ID
         in: path
@@ -648,7 +1123,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/reqmodel.UserCommentListResp'
+            $ref: '#/definitions/reqmodel.UserCommentListResponse'
         "404":
           description: Not Found
           schema:
@@ -661,11 +1136,11 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get user comment list
+      summary: Get user comments list
       tags:
+      - comment
       - user
-      - movie_comment
-  /user/{user_id}/favorite_movie:
+  /user/{user_id}/favorite:
     get:
       consumes:
       - application/json
@@ -682,7 +1157,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/reqmodel.FavoriteMovieListResponse'
+            $ref: '#/definitions/reqmodel.UserFavoriteListResponse'
         "404":
           description: Not Found
           schema:
@@ -695,90 +1170,15 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get favorite movie list
+      summary: Get user favorite list
       tags:
-      - favorite_movie
+      - favorite
       - user
-  /user/{user_id}/favorite_movie/{movie_id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete favorite movie
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      - description: Movie ID
-        in: path
-        name: movie_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete favorite movie
-      tags:
-      - favorite_movie
-      - user
-    post:
-      consumes:
-      - application/json
-      description: Add movie to user's favorite
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      - description: Movie ID
-        in: path
-        name: movie_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/sqlc.FavoriteMovie'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Add favorite movie
-      tags:
-      - favorite_movie
-      - user
-  /user/{user_id}/rated_movie:
+  /user/{user_id}/rating:
     get:
       consumes:
       - application/json
-      description: Get movie rating by user id
+      description: Get user's rated movies
       parameters:
       - description: User ID
         in: path
@@ -791,7 +1191,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/reqmodel.RatedMovieListResponse'
+            $ref: '#/definitions/reqmodel.UserRatingListResponse'
         "404":
           description: Not Found
           schema:
@@ -804,123 +1204,8 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get  movie rating
+      summary: Get user rating list
       tags:
-      - rated_movie
-      - user
-    patch:
-      consumes:
-      - application/json
-      description: Update movie rating
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      - description: Updated rating
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/reqmodel.RatedMovieRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/sqlc.RatedMovie'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update movie rating
-      tags:
-      - rated_movie
-      - user
-    post:
-      consumes:
-      - application/json
-      description: Rate movie
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      - description: Rate movie data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/reqmodel.RatedMovieRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/sqlc.RatedMovie'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Rate movie
-      tags:
-      - rated_movie
-      - user
-  /user/{user_id}/rated_movie/{movie_id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete certain movie rating
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      - description: Movie ID
-        in: path
-        name: movie_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete movie rating
-      tags:
-      - rated_movie
+      - rating
       - user
 swagger: "2.0"

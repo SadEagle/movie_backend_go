@@ -15,7 +15,7 @@ sql:
         overrides:
           - column: "user_data.login"
             go_struct_tag: 'json:"-"'
-          - column: "user_data.password"
+          - column: "user_data.encoded_password"
             go_struct_tag: 'json:"-"'
           - column: "user_data.is_admin"
             go_struct_tag: 'json:"-"'

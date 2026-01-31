@@ -1,8 +1,8 @@
-package jwt
+package secret
 
 import (
+	"bytes"
 	"golang.org/x/crypto/argon2"
-	"reflect"
 )
 
 // Random 16 bytes
@@ -12,6 +12,6 @@ func EncodePassword(password string) []byte {
 	return argon2.IDKey([]byte(password), ARGON2_SALT, 3, 32*1024, 4, 32)
 }
 
-func IsEqualPasswd(hashed_passwd []byte, password string) bool {
-	return reflect.DeepEqual(hashed_passwd, EncodePassword(password))
+func IsEqualPasswd(hashed_passwd []byte, passwd []byte) bool {
+	return bytes.Equal(hashed_passwd, passwd)
 }

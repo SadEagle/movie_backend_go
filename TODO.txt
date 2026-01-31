@@ -1,4 +1,0 @@
-1. jwt 
-2. Add remote api rating reader from imdb
-3. Add autoupdate routes for materialized view and remote api rating reader as api's and make planned action
-4. Add testing

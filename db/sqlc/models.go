@@ -8,7 +8,15 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type FavoriteMovie struct {
+type Comment struct {
+	ID        pgtype.UUID      `json:"id"`
+	UserID    pgtype.UUID      `json:"user_id"`
+	MovieID   pgtype.UUID      `json:"movie_id"`
+	Text      string           `json:"text"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+}
+
+type Favorite struct {
 	UserID  pgtype.UUID `json:"user_id"`
 	MovieID pgtype.UUID `json:"movie_id"`
 }
@@ -19,31 +27,23 @@ type Movie struct {
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
-type MovieComment struct {
-	ID        pgtype.UUID      `json:"id"`
-	UserID    pgtype.UUID      `json:"user_id"`
-	MovieID   pgtype.UUID      `json:"movie_id"`
-	Text      string           `json:"text"`
-	CreatedAt pgtype.Timestamp `json:"created_at"`
-}
-
-type MovieRatingView struct {
-	MovieID     pgtype.UUID `json:"movie_id"`
-	AmountRates int64       `json:"amount_rates"`
-	Rating      float64     `json:"rating"`
-}
-
-type RatedMovie struct {
+type Rating struct {
 	UserID  pgtype.UUID `json:"user_id"`
 	MovieID pgtype.UUID `json:"movie_id"`
 	Rating  int16       `json:"rating"`
 }
 
+type TotalRatingMview struct {
+	MovieID     pgtype.UUID `json:"movie_id"`
+	AmountRates int64       `json:"amount_rates"`
+	Rating      float64     `json:"rating"`
+}
+
 type UserDatum struct {
-	ID        pgtype.UUID      `json:"id"`
-	Name      string           `json:"name"`
-	Login     string           `json:"-"`
-	Password  string           `json:"-"`
-	IsAdmin   bool             `json:"-"`
-	CreatedAt pgtype.Timestamp `json:"created_at"`
+	ID              pgtype.UUID      `json:"id"`
+	Name            string           `json:"name"`
+	Login           string           `json:"-"`
+	EncodedPassword []byte           `json:"-"`
+	IsAdmin         bool             `json:"-"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
 }

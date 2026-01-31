@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS user_data(
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR NOT NULL,
   login VARCHAR NOT NULL UNIQUE,
-  password VARCHAR NOT NULL,
+  encoded_password BYTEA NOT NULL,
   is_admin BOOL NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 );
@@ -13,30 +13,30 @@ CREATE TABLE IF NOT EXISTS movie(
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS favorite_movie(
+CREATE TABLE IF NOT EXISTS favorite(
   user_id UUID REFERENCES user_data ON DELETE CASCADE,
-  movie_id UUID REFERENCES movie ON DELETE CASCADE,
+  movie_id UUID REFERENCES movie,
   PRIMARY KEY( user_id, movie_id)
 );
 
-CREATE TABLE IF NOT EXISTS rated_movie(
+CREATE TABLE IF NOT EXISTS rating(
   user_id UUID REFERENCES user_data ON DELETE CASCADE,
   movie_id UUID REFERENCES movie ON DELETE CASCADE,
   rating SMALLINT NOT NULL CHECK(rating BETWEEN 1 AND 10),
   PRIMARY KEY( user_id, movie_id)
 );
 
-CREATE TABLE IF NOT EXISTS movie_comment(
+CREATE TABLE IF NOT EXISTS comment(
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES user_data ON DELETE CASCADE,
+  user_id UUID REFERENCES user_data,
   movie_id UUID REFERENCES movie ON DELETE CASCADE,
   text VARCHAR NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE MATERIALIZED VIEW IF NOT EXISTS movie_rating_view AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS total_rating_mview AS
 SELECT movie_id, COUNT(*) AS amount_rates, AVG(rating) AS rating
-FROM rated_movie
+FROM rating
 GROUP BY movie_id;
 
-CREATE UNIQUE INDEX movie_rating_view_index ON movie_rating_view(movie_id);
+CREATE UNIQUE INDEX total_rating_mview_index ON total_rating_mview(movie_id);

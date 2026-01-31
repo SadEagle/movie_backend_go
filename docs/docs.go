@@ -16,9 +16,448 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Get movie by id",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Auth",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Login",
+                        "name": "login",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/oauth2.Token"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/comment": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment"
+                ],
+                "summary": "Create comments",
+                "parameters": [
+                    {
+                        "description": "Comment create data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.CommentCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.Comment"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/comment/{commentID}": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment"
+                ],
+                "summary": "Update comments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "movie ID",
+                        "name": "comment_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Comment update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.CommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.Comment"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/comment/{comment_id}": {
+            "get": {
+                "description": "Get comment by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment"
+                ],
+                "summary": "Get comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "comment_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.Comment"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment"
+                ],
+                "summary": "Delete comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "comment_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/favorite": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "favorite"
+                ],
+                "summary": "Get favorite",
+                "parameters": [
+                    {
+                        "description": "Comment update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.FavoriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.Favorite"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add movie to user's favorite",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "favorite"
+                ],
+                "summary": "Add favorite movie",
+                "parameters": [
+                    {
+                        "description": "Comment update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.FavoriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.Favorite"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "favorite"
+                ],
+                "summary": "Delete favorite",
+                "parameters": [
+                    {
+                        "description": "Comment delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.FavoriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/healthcheck": {
+            "get": {
+                "description": "Healtcheck dummy output",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "healthcheck"
+                ],
+                "summary": "Dummy healthcheck",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.GetMovieByIDRow"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/movie": {
             "get": {
-                "description": "Get movie list",
+                "description": "Get all movie list",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,7 +467,7 @@ const docTemplate = `{
                 "tags": [
                     "movie"
                 ],
-                "summary": "Show movie list",
+                "summary": "Get movie list",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -57,7 +496,6 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create movie",
                 "consumes": [
                     "application/json"
                 ],
@@ -119,7 +557,7 @@ const docTemplate = `{
                 "tags": [
                     "movie"
                 ],
-                "summary": "Show movie",
+                "summary": "Get movie",
                 "parameters": [
                     {
                         "type": "string",
@@ -157,7 +595,6 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete movie comment",
                 "consumes": [
                     "application/json"
                 ],
@@ -165,22 +602,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "movie",
-                    "movie_comment"
+                    "movie"
                 ],
-                "summary": "Delete movie comment",
+                "summary": "Delete movie",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Movie ID",
                         "name": "movie_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
@@ -269,7 +698,7 @@ const docTemplate = `{
         },
         "/movie/{movie_id}/comment": {
             "get": {
-                "description": "Get movie comments list",
+                "description": "Get comment list for certain movie",
                 "consumes": [
                     "application/json"
                 ],
@@ -277,14 +706,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "movie",
-                    "movie_comment"
+                    "comment",
+                    "movie"
                 ],
                 "summary": "Get movie comments list",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "movie ID",
+                        "description": "Movie ID",
                         "name": "movie_id",
                         "in": "path",
                         "required": true
@@ -294,7 +723,168 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.MovieCommentListResp"
+                            "$ref": "#/definitions/reqmodel.MovieCommentListResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/movie/{movie_id}/rating": {
+            "get": {
+                "description": "Get users who rated movie",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rating",
+                    "movie"
+                ],
+                "summary": "Get movie rating list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "movie_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.MovieRatingListResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/movie/{user_id}/favorite": {
+            "get": {
+                "description": "Get list users who marked this movie as favorite",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "favorite",
+                    "movie"
+                ],
+                "summary": "Get movie favorite list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.MovieFavoriteListResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rating": {
+            "post": {
+                "description": "Rate movie by user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rating"
+                ],
+                "summary": "Create rating",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Rate movie data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.RatingCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.Rating"
                         }
                     },
                     "404": {
@@ -317,8 +907,8 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
-                "description": "Create movie comments list",
+            "delete": {
+                "description": "Delete certain rating",
                 "consumes": [
                     "application/json"
                 ],
@@ -326,25 +916,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "movie",
-                    "movie_comment"
+                    "rating"
                 ],
-                "summary": "Create movie comments list",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "movie ID",
-                        "name": "movie_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Delete rating",
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/sqlc.MovieComment"
-                        }
+                    "204": {
+                        "description": "No Content"
                     },
                     "404": {
                         "description": "Not Found",
@@ -367,7 +944,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Update movie comments list",
+                "description": "Update rating",
                 "consumes": [
                     "application/json"
                 ],
@@ -375,24 +952,25 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "movie",
-                    "movie_comment"
+                    "rating"
                 ],
-                "summary": "Update movie comments list",
+                "summary": "Update rating",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "movie ID",
-                        "name": "movie_id",
-                        "in": "path",
-                        "required": true
+                        "description": "Updated rating",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.RatingUpdateRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sqlc.MovieComment"
+                            "$ref": "#/definitions/sqlc.Rating"
                         }
                     },
                     "404": {
@@ -457,7 +1035,6 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create user",
                 "consumes": [
                     "application/json"
                 ],
@@ -566,7 +1143,6 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete user",
                 "consumes": [
                     "application/json"
                 ],
@@ -677,9 +1253,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/{user_id}/comments": {
+        "/user/{user_id}/comment": {
             "get": {
-                "description": "Get user's comment list",
+                "description": "Get comment list for certain user",
                 "consumes": [
                     "application/json"
                 ],
@@ -687,10 +1263,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user",
-                    "movie_comment"
+                    "comment",
+                    "user"
                 ],
-                "summary": "Get user comment list",
+                "summary": "Get user comments list",
                 "parameters": [
                     {
                         "type": "string",
@@ -704,7 +1280,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.UserCommentListResp"
+                            "$ref": "#/definitions/reqmodel.UserCommentListResponse"
                         }
                     },
                     "404": {
@@ -728,7 +1304,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/{user_id}/favorite_movie": {
+        "/user/{user_id}/favorite": {
             "get": {
                 "description": "Get user's favorite movie list",
                 "consumes": [
@@ -738,10 +1314,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "favorite_movie",
+                    "favorite",
                     "user"
                 ],
-                "summary": "Get favorite movie list",
+                "summary": "Get user favorite list",
                 "parameters": [
                     {
                         "type": "string",
@@ -755,7 +1331,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.FavoriteMovieListResponse"
+                            "$ref": "#/definitions/reqmodel.UserFavoriteListResponse"
                         }
                     },
                     "404": {
@@ -779,120 +1355,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/{user_id}/favorite_movie/{movie_id}": {
-            "post": {
-                "description": "Add movie to user's favorite",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "favorite_movie",
-                    "user"
-                ],
-                "summary": "Add favorite movie",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Movie ID",
-                        "name": "movie_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/sqlc.FavoriteMovie"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete favorite movie",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "favorite_movie",
-                    "user"
-                ],
-                "summary": "Delete favorite movie",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Movie ID",
-                        "name": "movie_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/user/{user_id}/rated_movie": {
+        "/user/{user_id}/rating": {
             "get": {
-                "description": "Get movie rating by user id",
+                "description": "Get user's rated movies",
                 "consumes": [
                     "application/json"
                 ],
@@ -900,10 +1365,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "rated_movie",
+                    "rating",
                     "user"
                 ],
-                "summary": "Get  movie rating",
+                "summary": "Get user rating list",
                 "parameters": [
                     {
                         "type": "string",
@@ -917,179 +1382,8 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.RatedMovieListResponse"
+                            "$ref": "#/definitions/reqmodel.UserRatingListResponse"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Rate movie",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "rated_movie",
-                    "user"
-                ],
-                "summary": "Rate movie",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Rate movie data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/reqmodel.RatedMovieRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/sqlc.RatedMovie"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Update movie rating",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "rated_movie",
-                    "user"
-                ],
-                "summary": "Update movie rating",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated rating",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/reqmodel.RatedMovieRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/sqlc.RatedMovie"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/user/{user_id}/rated_movie/{movie_id}": {
-            "delete": {
-                "description": "Delete certain movie rating",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "rated_movie",
-                    "user"
-                ],
-                "summary": "Delete movie rating",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Movie ID",
-                        "name": "movie_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     },
                     "404": {
                         "description": "Not Found",
@@ -1114,6 +1408,31 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "oauth2.Token": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "description": "AccessToken is the token that authorizes and authenticates\nthe requests.",
+                    "type": "string"
+                },
+                "expires_in": {
+                    "description": "ExpiresIn is the OAuth2 wire format \"expires_in\" field,\nwhich specifies how many seconds later the token expires,\nrelative to an unknown time base approximately around \"now\".\nIt is the application's responsibility to populate\n` + "`" + `Expiry` + "`" + ` from ` + "`" + `ExpiresIn` + "`" + ` when required.",
+                    "type": "integer"
+                },
+                "expiry": {
+                    "description": "Expiry is the optional expiration time of the access token.\n\nIf zero, [TokenSource] implementations will reuse the same\ntoken forever and RefreshToken or equivalent\nmechanisms for that TokenSource will not be used.",
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "description": "RefreshToken is a token that's used by the application\n(as opposed to the user) to refresh the access token\nif it expires.",
+                    "type": "string"
+                },
+                "token_type": {
+                    "description": "TokenType is the type of token.\nThe Type method returns either this or \"Bearer\", the default.",
+                    "type": "string"
+                }
+            }
+        },
         "pgtype.InfinityModifier": {
             "type": "integer",
             "format": "int32",
@@ -1143,27 +1462,60 @@ const docTemplate = `{
                 }
             }
         },
-        "reqmodel.FavoriteMovieListResponse": {
+        "reqmodel.CommentCreateRequest": {
             "type": "object",
             "properties": {
-                "favorite_movie_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "movie_id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "string"
                 }
             }
         },
-        "reqmodel.MovieCommentListResp": {
+        "reqmodel.CommentRequest": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.FavoriteRequest": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.MovieCommentListResponse": {
             "type": "object",
             "properties": {
                 "movie_comment_list": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/sqlc.GetMovieCommentListRow"
+                    }
+                },
+                "movie_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.MovieFavoriteListResponse": {
+            "type": "object",
+            "properties": {
+                "favorite_movie_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "movie_id": {
@@ -1182,6 +1534,20 @@ const docTemplate = `{
                 }
             }
         },
+        "reqmodel.MovieRatingListResponse": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                },
+                "movie_rating_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sqlc.GetMovieRatingListRow"
+                    }
+                }
+            }
+        },
         "reqmodel.MovieRequest": {
             "type": "object",
             "properties": {
@@ -1190,21 +1556,7 @@ const docTemplate = `{
                 }
             }
         },
-        "reqmodel.RatedMovieListResponse": {
-            "type": "object",
-            "properties": {
-                "rated_movie_list": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/sqlc.GetMovieRatingListRow"
-                    }
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "reqmodel.RatedMovieRequest": {
+        "reqmodel.RatingCreateRequest": {
             "type": "object",
             "properties": {
                 "movie_id": {
@@ -1212,16 +1564,58 @@ const docTemplate = `{
                 },
                 "rating": {
                     "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
                 }
             }
         },
-        "reqmodel.UserCommentListResp": {
+        "reqmodel.RatingIDRequest": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.RatingUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.UserCommentListResponse": {
             "type": "object",
             "properties": {
                 "user_comment_list": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/sqlc.GetUserCommentListRow"
+                    }
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.UserFavoriteListResponse": {
+            "type": "object",
+            "properties": {
+                "favorite_user_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "user_id": {
@@ -1240,6 +1634,20 @@ const docTemplate = `{
                 }
             }
         },
+        "reqmodel.UserRatingListResponse": {
+            "type": "object",
+            "properties": {
+                "user_id": {
+                    "type": "string"
+                },
+                "user_rating_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sqlc.GetUserRatingListRow"
+                    }
+                }
+            }
+        },
         "reqmodel.UserRequest": {
             "type": "object",
             "properties": {
@@ -1254,7 +1662,27 @@ const docTemplate = `{
                 }
             }
         },
-        "sqlc.FavoriteMovie": {
+        "sqlc.Comment": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "$ref": "#/definitions/pgtype.Timestamp"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "movie_id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "sqlc.Favorite": {
             "type": "object",
             "properties": {
                 "movie_id": {
@@ -1330,6 +1758,17 @@ const docTemplate = `{
                 }
             }
         },
+        "sqlc.GetUserRatingListRow": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                }
+            }
+        },
         "sqlc.Movie": {
             "type": "object",
             "properties": {
@@ -1344,27 +1783,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sqlc.MovieComment": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "$ref": "#/definitions/pgtype.Timestamp"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "movie_id": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "sqlc.RatedMovie": {
+        "sqlc.Rating": {
             "type": "object",
             "properties": {
                 "movie_id": {
