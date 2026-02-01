@@ -15,7 +15,7 @@ const CheckHealthTimeContext = 2 * time.Minute
 
 type HandlerObj struct {
 	DBPool *sqlc.Queries
-	Log    *log.Logger
+	Logger *log.Logger
 }
 
 func writeResponseBody(rw http.ResponseWriter, responseByteObj any, responseObjName string) {

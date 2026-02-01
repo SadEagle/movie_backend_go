@@ -30,27 +30,27 @@ func (ho *HandlerObj) LoginHandler(rw http.ResponseWriter, r *http.Request) {
 
 	loginStr := r.FormValue("login")
 	if loginStr == "" {
-		ho.Log.Println("Form param `login` is required")
+		ho.Logger.Println("Form param `login` is required")
 		http.Error(rw, "Form param `login` not found", http.StatusBadRequest)
 		return
 	}
 
 	passwordStr := r.FormValue("password")
 	if passwordStr == "" {
-		ho.Log.Println("Form param `password` is required")
+		ho.Logger.Println("Form param `password` is required")
 		http.Error(rw, "Form param `password` not found", http.StatusBadRequest)
 		return
 	}
 
 	user, err := crudl.GetUserByLogin(ctx, ho.DBPool, loginStr)
 	if err != nil {
-		ho.Log.Printf("get user by login from db: %v", err)
+		ho.Logger.Printf("get user by login from db: %v", err)
 		http.Error(rw, "Incorrect login or password", http.StatusBadRequest)
 		return
 	}
 
 	if !bytes.Equal(secret.EncodePassword(passwordStr), user.EncodedPassword) {
-		ho.Log.Printf("Wrong formData password: %v", err)
+		ho.Logger.Printf("Wrong formData password: %v", err)
 		http.Error(rw, "Incorrect login or password", http.StatusBadRequest)
 		return
 	}
@@ -61,7 +61,7 @@ func (ho *HandlerObj) LoginHandler(rw http.ResponseWriter, r *http.Request) {
 
 	accessToken, err := secret.TokenGenerate(userTokenData, experify)
 	if err != nil {
-		ho.Log.Printf("generate token: %v", err)
+		ho.Logger.Printf("generate token: %v", err)
 		http.Error(rw, "Can't generate user token", http.StatusInternalServerError)
 	}
 

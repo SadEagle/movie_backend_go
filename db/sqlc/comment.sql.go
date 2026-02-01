@@ -38,17 +38,11 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (C
 
 const deleteComment = `-- name: DeleteComment :execrows
 DELETE FROM comment
-WHERE user_id = $1 
-  AND movie_id = $2
+WHERE id = $1
 `
 
-type DeleteCommentParams struct {
-	UserID  pgtype.UUID `json:"user_id"`
-	MovieID pgtype.UUID `json:"movie_id"`
-}
-
-func (q *Queries) DeleteComment(ctx context.Context, arg DeleteCommentParams) (int64, error) {
-	result, err := q.db.Exec(ctx, deleteComment, arg.UserID, arg.MovieID)
+func (q *Queries) DeleteComment(ctx context.Context, id pgtype.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteComment, id)
 	if err != nil {
 		return 0, err
 	}

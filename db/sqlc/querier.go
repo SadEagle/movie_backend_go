@@ -16,7 +16,7 @@ type Querier interface {
 	CreateMovie(ctx context.Context, title string) (Movie, error)
 	CreateRating(ctx context.Context, arg CreateRatingParams) (Rating, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (UserDatum, error)
-	DeleteComment(ctx context.Context, arg DeleteCommentParams) (int64, error)
+	DeleteComment(ctx context.Context, id pgtype.UUID) (int64, error)
 	DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) (int64, error)
 	DeleteMovie(ctx context.Context, id pgtype.UUID) (int64, error)
 	DeleteRating(ctx context.Context, arg DeleteRatingParams) (int64, error)

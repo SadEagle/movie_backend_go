@@ -21,9 +21,9 @@ func CheckHealthHandlerCreate(pool *pgxpool.Pool) http.HandlerFunc {
 		defer cancel()
 
 		if err := pool.Ping(ctx); err != nil {
-			rw.WriteHeader(http.StatusServiceUnavailable)
+			http.Error(rw, "Service connection lost", http.StatusServiceUnavailable)
 			return
 		}
-		rw.WriteHeader(http.StatusOK)
+		rw.WriteHeader(http.StatusNoContent)
 	}
 }

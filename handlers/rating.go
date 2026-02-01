@@ -29,14 +29,14 @@ func (ho *HandlerObj) GetUserRatingListHandler(rw http.ResponseWriter, r *http.R
 
 	var userID pgtype.UUID
 	if err := userID.Scan(r.PathValue("user_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	userRatingList, err := crudl.GetUserRatingList(ctx, ho.DBPool, userID)
 	if err != nil {
-		ho.Log.Printf("proceed rated movie list: %v", err)
+		ho.Logger.Printf("proceed rated movie list: %v", err)
 		http.Error(rw, "Can't proceed rated movie list", http.StatusNotFound)
 		return
 	}
@@ -61,14 +61,14 @@ func (ho *HandlerObj) GetMovieRatingListHandler(rw http.ResponseWriter, r *http.
 
 	var movieID pgtype.UUID
 	if err := movieID.Scan(r.PathValue("movie_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	movieRatingList, err := crudl.GetMovieRatingList(ctx, ho.DBPool, movieID)
 	if err != nil {
-		ho.Log.Printf("proceed users who rate current movie: %v", err)
+		ho.Logger.Printf("proceed users who rate current movie: %v", err)
 		http.Error(rw, "Can't proceed users who rate current movie", http.StatusNotFound)
 		return
 	}
@@ -94,7 +94,7 @@ func (ho *HandlerObj) GetRatingHandler(rw http.ResponseWriter, r *http.Request) 
 	var ratingReq reqmodel.RatingIDRequest
 	err := decoder.Decode(&ratingReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -102,7 +102,7 @@ func (ho *HandlerObj) GetRatingHandler(rw http.ResponseWriter, r *http.Request) 
 
 	rating, err := crudl.GetRating(ctx, ho.DBPool, ratingGet)
 	if err != nil {
-		ho.Log.Printf("proceed get rating: %v", err)
+		ho.Logger.Printf("proceed get rating: %v", err)
 		http.Error(rw, "Can't proceed get rating", http.StatusNotFound)
 		return
 	}
@@ -129,7 +129,7 @@ func (ho *HandlerObj) CreateRatingHandler(rw http.ResponseWriter, r *http.Reques
 	var ratingReq reqmodel.RatingCreateRequest
 	err := decoder.Decode(&ratingReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -137,7 +137,7 @@ func (ho *HandlerObj) CreateRatingHandler(rw http.ResponseWriter, r *http.Reques
 
 	rating, err := crudl.CreateMovieRating(ctx, ho.DBPool, ratingCreate)
 	if err != nil {
-		ho.Log.Printf("proceed rating creation: %v", err)
+		ho.Logger.Printf("proceed rating creation: %v", err)
 		http.Error(rw, "Can't create rating", http.StatusBadRequest)
 		return
 	}
@@ -164,7 +164,7 @@ func (ho *HandlerObj) UpdateRatingHandler(rw http.ResponseWriter, r *http.Reques
 	var ratingUpdateReq reqmodel.RatingUpdateRequest
 	err := decoder.Decode(&ratingUpdateReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -172,7 +172,7 @@ func (ho *HandlerObj) UpdateRatingHandler(rw http.ResponseWriter, r *http.Reques
 
 	ratedMovie, err := crudl.UpdateMovieRating(ctx, ho.DBPool, ratingUpdate)
 	if err != nil {
-		ho.Log.Printf("proceed rating update: %v", err)
+		ho.Logger.Printf("proceed rating update: %v", err)
 		http.Error(rw, "Can't update rating", http.StatusBadRequest)
 		return
 	}
@@ -198,14 +198,14 @@ func (ho *HandlerObj) DeleteRatingHandler(rw http.ResponseWriter, r *http.Reques
 	var ratingUpdateReq reqmodel.RatingIDRequest
 	err := decoder.Decode(&ratingUpdateReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
 	ratingDelete := sqlc.DeleteRatingParams{UserID: ratingUpdateReq.UserID, MovieID: ratingUpdateReq.MovieID}
 
 	if err := crudl.DeleteRating(ctx, ho.DBPool, ratingDelete); err != nil {
-		ho.Log.Printf("proceed delete rating request: %v", err)
+		ho.Logger.Printf("proceed delete rating request: %v", err)
 		http.Error(rw, "Can't delete rating", http.StatusBadRequest)
 		return
 	}

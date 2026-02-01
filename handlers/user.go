@@ -30,13 +30,13 @@ func (ho *HandlerObj) GetUserHandler(rw http.ResponseWriter, r *http.Request) {
 
 	var userID pgtype.UUID
 	if err := userID.Scan(r.PathValue("user_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 	user, err := crudl.GetUserByID(ctx, ho.DBPool, userID)
 	if err != nil {
-		ho.Log.Printf("proceed getting user: %v", err)
+		ho.Logger.Printf("proceed getting user: %v", err)
 		http.Error(rw, "Can't proceed getting user", http.StatusBadRequest)
 		return
 	}
@@ -59,7 +59,7 @@ func (ho *HandlerObj) GetUserListHandler(rw http.ResponseWriter, r *http.Request
 	defer close()
 	userList, err := crudl.GetUserList(ctx, ho.DBPool)
 	if err != nil {
-		ho.Log.Printf("proceed getting user list: %w", err)
+		ho.Logger.Printf("proceed getting user list: %w", err)
 		http.Error(rw, "Can't proceed getting user list", http.StatusBadRequest)
 		return
 	}
@@ -88,14 +88,14 @@ func (ho *HandlerObj) UpdateUserHandler(rw http.ResponseWriter, r *http.Request)
 
 	var userID pgtype.UUID
 	if err := userID.Scan(r.PathValue("user_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	var userUpdateRequest reqmodel.UserUpdateRequest
 	if err := decoder.Decode(&userUpdateRequest); err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -104,7 +104,7 @@ func (ho *HandlerObj) UpdateUserHandler(rw http.ResponseWriter, r *http.Request)
 	userUpdate := sqlc.UpdateUserParams{ID: userID, Name: userUpdateRequest.Name, Login: userUpdateRequest.Login, EncodePassword: encodedPassword}
 	user, err := crudl.UpdateUser(ctx, ho.DBPool, userUpdate)
 	if err != nil {
-		ho.Log.Printf("proceed update user: %v", err)
+		ho.Logger.Printf("proceed update user: %v", err)
 		http.Error(rw, "Can't proceed update user", http.StatusBadRequest)
 		return
 	}
@@ -130,7 +130,7 @@ func (ho *HandlerObj) CreateUserHandler(rw http.ResponseWriter, r *http.Request)
 	var userRequest reqmodel.UserRequest
 	err := decoder.Decode(&userRequest)
 	if err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -139,7 +139,7 @@ func (ho *HandlerObj) CreateUserHandler(rw http.ResponseWriter, r *http.Request)
 	userCreate := sqlc.CreateUserParams{Name: userRequest.Name, Login: userRequest.Login, EncodedPassword: encodedPassword}
 	user, err := crudl.CreateUser(ctx, ho.DBPool, userCreate)
 	if err != nil {
-		ho.Log.Printf("proceed user creation: %v", err)
+		ho.Logger.Printf("proceed user creation: %v", err)
 		http.Error(rw, "Can't create user", http.StatusNotFound)
 		return
 	}
@@ -163,14 +163,14 @@ func (ho *HandlerObj) DeleteUserHandler(rw http.ResponseWriter, r *http.Request)
 
 	var userID pgtype.UUID
 	if err := userID.Scan(r.PathValue("user_id")); err != nil {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	err := crudl.DeleteUser(ctx, ho.DBPool, userID)
 	if err != nil {
-		ho.Log.Printf("proceed user deletion: %v", err)
+		ho.Logger.Printf("proceed user deletion: %v", err)
 		http.Error(rw, "Can't delete user", http.StatusNotFound)
 		return
 	}

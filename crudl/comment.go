@@ -12,8 +12,8 @@ func CreateComment(ctx context.Context, querier sqlc.Querier, commentCreate sqlc
 	return movieComment, err
 }
 
-func DeleteComment(ctx context.Context, querier sqlc.Querier, commentDelete sqlc.DeleteCommentParams) error {
-	numDel, err := querier.DeleteComment(ctx, commentDelete)
+func DeleteComment(ctx context.Context, querier sqlc.Querier, commentID pgtype.UUID) error {
+	numDel, err := querier.DeleteComment(ctx, commentID)
 	if err != nil {
 		return err
 	}

@@ -28,7 +28,7 @@ func (ho *HandlerObj) GetMovieListHandler(rw http.ResponseWriter, r *http.Reques
 
 	movieList, err := crudl.GetMovieList(ctx, ho.DBPool)
 	if err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Can't get movie list", http.StatusBadRequest)
 		return
 	}
@@ -53,13 +53,13 @@ func (ho *HandlerObj) GetMovieHandler(rw http.ResponseWriter, r *http.Request) {
 
 	var movieID pgtype.UUID
 	if err := movieID.Scan(r.PathValue("movie_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 	movie, err := crudl.GetMovieByID(ctx, ho.DBPool, movieID)
 	if err != nil {
-		ho.Log.Printf("get movie by id %v: %v", movieID, err)
+		ho.Logger.Printf("get movie by id %v: %v", movieID, err)
 		http.Error(rw, "Can't get movie by id", http.StatusBadRequest)
 		return
 	}
@@ -87,14 +87,14 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 	var updateMovie reqmodel.MovieUpdateRequest
 	err := decoder.Decode(&updateMovie)
 	if err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
 
 	var movieID pgtype.UUID
 	if err := movieID.Scan(r.PathValue("movie_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
 		return
 	}
@@ -102,7 +102,7 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 	movieUpdate := sqlc.UpdateMovieParams{ID: movieID, Title: updateMovie.Title}
 	movie, err := ho.DBPool.UpdateMovie(ctx, movieUpdate)
 	if err != nil {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -127,14 +127,14 @@ func (ho *HandlerObj) CreateMovieHandler(rw http.ResponseWriter, r *http.Request
 	var movieCreate reqmodel.MovieRequest
 	err := decoder.Decode(&movieCreate)
 	if err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
 
 	movie, err := crudl.CreateMovie(ctx, ho.DBPool, movieCreate.Title)
 	if err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Can't create movie", http.StatusNotFound)
 		return
 	}
@@ -158,13 +158,13 @@ func (ho *HandlerObj) DeleteMovieHandler(rw http.ResponseWriter, r *http.Request
 
 	var movieID pgtype.UUID
 	if err := movieID.Scan(r.PathValue("movie_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	if err := crudl.DeleteMovie(ctx, ho.DBPool, movieID); err != nil {
-		ho.Log.Println("proceed delete movie request")
+		ho.Logger.Println("proceed delete movie request")
 		http.Error(rw, "Can't delete movie", http.StatusNotFound)
 		return
 	}

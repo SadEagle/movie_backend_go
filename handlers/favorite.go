@@ -29,14 +29,14 @@ func (ho *HandlerObj) GetUserFavoriteListHandler(rw http.ResponseWriter, r *http
 
 	var userID pgtype.UUID
 	if err := userID.Scan(r.PathValue("user_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	favMovieList, err := ho.DBPool.GetUserFavoriteList(ctx, userID)
 	if err != nil {
-		ho.Log.Printf("get user's favorite movie list from db: %v", err)
+		ho.Logger.Printf("get user's favorite movie list from db: %v", err)
 		http.Error(rw, "Can't get user's favorite movie list", http.StatusBadRequest)
 		return
 	}
@@ -62,14 +62,14 @@ func (ho *HandlerObj) GetMovieFavoriteListHandler(rw http.ResponseWriter, r *htt
 
 	var movieID pgtype.UUID
 	if err := movieID.Scan(r.PathValue("movie_id")); err != nil {
-		ho.Log.Println(err)
+		ho.Logger.Println(err)
 		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	favUserList, err := ho.DBPool.GetUserFavoriteList(ctx, movieID)
 	if err != nil {
-		ho.Log.Printf("get movie favorite list from db: %v", err)
+		ho.Logger.Printf("get movie favorite list from db: %v", err)
 		http.Error(rw, "Can't get user's favorite movie list", http.StatusBadRequest)
 		return
 	}
@@ -97,7 +97,7 @@ func (ho *HandlerObj) GetFavoriteHandler(rw http.ResponseWriter, r *http.Request
 	var favReq reqmodel.FavoriteRequest
 	err := decoder.Decode(&favReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -106,7 +106,7 @@ func (ho *HandlerObj) GetFavoriteHandler(rw http.ResponseWriter, r *http.Request
 
 	favorite, err := ho.DBPool.GetFavorite(ctx, favGet)
 	if err != nil {
-		ho.Log.Printf("get favorite from db: %v", err)
+		ho.Logger.Printf("get favorite from db: %v", err)
 		http.Error(rw, "Can't get favorite", http.StatusBadRequest)
 		return
 	}
@@ -134,7 +134,7 @@ func (ho *HandlerObj) CreateFavoriteHandler(rw http.ResponseWriter, r *http.Requ
 	var favReq reqmodel.FavoriteRequest
 	err := decoder.Decode(&favReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -143,7 +143,7 @@ func (ho *HandlerObj) CreateFavoriteHandler(rw http.ResponseWriter, r *http.Requ
 
 	favMovie, err := crudl.CreateFavorite(ctx, ho.DBPool, favCreate)
 	if err != nil {
-		ho.Log.Printf("create movie favorite: %v", err)
+		ho.Logger.Printf("create movie favorite: %v", err)
 		http.Error(rw, "Can't create favorite", http.StatusBadRequest)
 		return
 	}
@@ -170,7 +170,7 @@ func (ho *HandlerObj) DeleteFavoriteHandler(rw http.ResponseWriter, r *http.Requ
 	var favReq reqmodel.FavoriteRequest
 	err := decoder.Decode(&favReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -178,7 +178,7 @@ func (ho *HandlerObj) DeleteFavoriteHandler(rw http.ResponseWriter, r *http.Requ
 	favDelete := sqlc.DeleteFavoriteParams{UserID: favReq.UserID, MovieID: favReq.MovieID}
 
 	if err := crudl.DeleteFavorite(ctx, ho.DBPool, favDelete); err != nil {
-		ho.Log.Printf("Delete favorite: %v", err)
+		ho.Logger.Printf("Delete favorite: %v", err)
 		http.Error(rw, "Can't delete favorite", http.StatusBadRequest)
 		return
 	}

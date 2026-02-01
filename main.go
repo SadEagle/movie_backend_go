@@ -7,10 +7,10 @@ import (
 	"movie_backend_go/db/sqlc"
 	_ "movie_backend_go/docs"
 	"movie_backend_go/handlers"
+	"movie_backend_go/scheduler"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -44,33 +44,26 @@ func main() {
 	}
 
 	dbPool, err := db.InitDB(c)
+	defaultLogger := log.Default()
+	backendLogger := log.New(os.Stdout, "backend: ", 2)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer dbPool.Close()
+
+	// Add schedulers
+	go scheduler.UpdateDBScheduler(dbPool, defaultLogger)
+
 	queries := sqlc.New(dbPool)
-
-	ping_db_check := func() {
-		for {
-			// err = db.Ping()
-			if err != nil {
-				log.Panic(err)
-			}
-			time.Sleep(time.Minute * 5)
-		}
-	}
-	go ping_db_check()
-
-	// mux := http.NewServeMux()
-	handlerObj := handlers.HandlerObj{DBPool: queries, Log: log.Default()}
+	handlerObj := handlers.HandlerObj{DBPool: queries, Logger: backendLogger}
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	//auth
+	// Auth
 	r.Post("/auth/login", handlerObj.LoginHandler)
 
-	// user
+	// User
 	r.Get("/user/{user_id}", handlerObj.GetUserHandler)
 	r.Get("/user", handlerObj.GetUserListHandler)
 	r.Post("/user", handlerObj.CreateUserHandler)
@@ -81,7 +74,7 @@ func main() {
 	r.Get("/user/{user_id}/rating", handlerObj.GetUserRatingListHandler)
 	r.Get("/user/{user_id}/favorite", handlerObj.GetUserFavoriteListHandler)
 
-	// movie
+	// Movie
 	r.Get("/movie", handlerObj.GetMovieListHandler)
 	r.Post("/movie", handlerObj.CreateMovieHandler)
 	r.Get("/movie/{movie_id}", handlerObj.GetMovieHandler)
@@ -92,18 +85,18 @@ func main() {
 	r.Get("/movie/{movie_id}/rating", handlerObj.GetMovieRatingListHandler)
 	r.Get("/movie/{movie_id}/favorite", handlerObj.GetMovieFavoriteListHandler)
 
-	// rating
+	// Rating
 	r.Get("/rating", handlerObj.GetRatingHandler)
 	r.Post("/rating", handlerObj.CreateRatingHandler)
 	r.Patch("/rating", handlerObj.UpdateRatingHandler)
 	r.Delete("/rating", handlerObj.DeleteRatingHandler)
 
-	// favorite
+	// Favorite
 	r.Get("/favorite", handlerObj.GetFavoriteHandler)
 	r.Post("/favorite", handlerObj.CreateFavoriteHandler)
 	r.Delete("/favorite", handlerObj.DeleteFavoriteHandler)
 
-	// System specific commands
+	// healthcheck
 	r.Get("/healthcheck", handlers.CheckHealthHandlerCreate(dbPool))
 	// Swagger
 	r.Get("/swagger/*", httpSwagger.WrapHandler)

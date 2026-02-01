@@ -28,14 +28,14 @@ func (ho *HandlerObj) GetMovieCommentListHandler(rw http.ResponseWriter, r *http
 
 	var movieID pgtype.UUID
 	if err := movieID.Scan(r.PathValue("movie_id")); err != nil {
-		ho.Log.Printf("proceed path parameter: %v", err)
+		ho.Logger.Printf("proceed path parameter: %v", err)
 		http.Error(rw, "Requested movie id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	movieCommentList, err := crudl.GetMovieCommentList(ctx, ho.DBPool, movieID)
 	if err != nil {
-		ho.Log.Printf("proceed getting movie comment list: %v", err)
+		ho.Logger.Printf("proceed getting movie comment list: %v", err)
 		http.Error(rw, "Can't get movie comment list", http.StatusNotFound)
 		return
 	}
@@ -59,14 +59,14 @@ func (ho *HandlerObj) GetUserCommentListHandler(rw http.ResponseWriter, r *http.
 
 	var userID pgtype.UUID
 	if err := userID.Scan(r.PathValue("user_id")); err != nil {
-		ho.Log.Printf("proceed path parameter: %v", err)
+		ho.Logger.Printf("proceed path parameter: %v", err)
 		http.Error(rw, "Requested user id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	userCommentList, err := crudl.GetUserCommentList(ctx, ho.DBPool, userID)
 	if err != nil {
-		ho.Log.Printf("proceed getting user comment list: %v", err)
+		ho.Logger.Printf("proceed getting user comment list: %v", err)
 		http.Error(rw, "Can't get user comment list", http.StatusNotFound)
 		return
 	}
@@ -90,14 +90,14 @@ func (ho *HandlerObj) GetCommentHandler(rw http.ResponseWriter, r *http.Request)
 
 	var commentID pgtype.UUID
 	if err := commentID.Scan(r.PathValue("comment_id")); err != nil {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Requested comment id should contain uuid style", http.StatusBadRequest)
 		return
 	}
 
 	comment, err := crudl.GetComment(ctx, ho.DBPool, commentID)
 	if err != nil {
-		ho.Log.Printf("proceed getting comment comment list: %v", err)
+		ho.Logger.Printf("proceed getting comment comment list: %v", err)
 		http.Error(rw, "Can't get user comment list", http.StatusNotFound)
 		return
 	}
@@ -123,7 +123,7 @@ func (ho *HandlerObj) CreateMovieCommentHandler(rw http.ResponseWriter, r *http.
 	var commentReq reqmodel.CommentCreateRequest
 	err := decoder.Decode(&commentReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -131,7 +131,7 @@ func (ho *HandlerObj) CreateMovieCommentHandler(rw http.ResponseWriter, r *http.
 	commentCreate := sqlc.CreateCommentParams{Text: commentReq.Text}
 	comment, err := crudl.CreateComment(ctx, ho.DBPool, commentCreate)
 	if err != nil {
-		ho.Log.Printf("proceed creating comment: %v", err)
+		ho.Logger.Printf("proceed creating comment: %v", err)
 		http.Error(rw, "Can't create movie comment", http.StatusNotFound)
 		return
 	}
@@ -157,7 +157,7 @@ func (ho *HandlerObj) UpdateCommentHandler(rw http.ResponseWriter, r *http.Reque
 
 	var commentID pgtype.UUID
 	if err := commentID.Scan(r.PathValue("comment_id")); err != nil {
-		ho.Log.Printf("proceed path parameter: %v", err)
+		ho.Logger.Printf("proceed path parameter: %v", err)
 		http.Error(rw, "Requested comment id should contain uuid style", http.StatusBadRequest)
 		return
 	}
@@ -165,7 +165,7 @@ func (ho *HandlerObj) UpdateCommentHandler(rw http.ResponseWriter, r *http.Reque
 	var commentReq reqmodel.CommentRequest
 	err := decoder.Decode(&commentReq)
 	if err != nil && err != io.EOF {
-		ho.Log.Printf("proceed body request: %v", err)
+		ho.Logger.Printf("proceed body request: %v", err)
 		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
 		return
 	}
@@ -173,7 +173,7 @@ func (ho *HandlerObj) UpdateCommentHandler(rw http.ResponseWriter, r *http.Reque
 	movieCommentUpdate := sqlc.UpdateCommentParams{ID: commentID, Text: commentReq.Text}
 	movieComment, err := crudl.UpdateMovieComment(ctx, ho.DBPool, movieCommentUpdate)
 	if err != nil {
-		ho.Log.Printf("proceed update comment: %v", err)
+		ho.Logger.Printf("proceed update comment: %v", err)
 		http.Error(rw, "Can't update comment", http.StatusNotFound)
 		return
 	}
@@ -195,14 +195,13 @@ func (ho *HandlerObj) DeleteMovieCommentHandler(rw http.ResponseWriter, r *http.
 
 	var commentID pgtype.UUID
 	if err := commentID.Scan(r.PathValue("comment_id")); err != nil {
-		ho.Log.Printf("proceed path parameter: %v", err)
+		ho.Logger.Printf("proceed path parameter: %v", err)
 		http.Error(rw, "Requested comment id should contain uuid style", http.StatusBadRequest)
 		return
 	}
-	movieCommentDelete := sqlc.DeleteCommentParams{}
 
-	if err := crudl.DeleteComment(ctx, ho.DBPool, movieCommentDelete); err != nil {
-		ho.Log.Println("proceed delete movie comment request")
+	if err := crudl.DeleteComment(ctx, ho.DBPool, commentID); err != nil {
+		ho.Logger.Println("proceed delete movie comment request")
 		http.Error(rw, "Can't delete movie comment", http.StatusNotFound)
 		return
 	}

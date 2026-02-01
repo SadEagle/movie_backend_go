@@ -27,4 +27,4 @@ RETURNING *;
 
 -- name: DeleteComment :execrows
 DELETE FROM comment
-WHERE id = $1
+WHERE id = $1;

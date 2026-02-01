@@ -1,7 +1,7 @@
 # About
-Current project is try to implement simple golang backend of online movie theater with `net/http`, `sqlc`, `migrate`, `swag`.
+Current project is try to implement simple golang backend of online movie theater with `chi`, `sqlc`, `migrate`, `swag`.
 
-Currently it contains 4 tables: movie, user, favorite_movie, rated_movie. We may add user, movie and favorite_movie/rated_movie relations.
+Currently it contains 5 tables: movie, user, favorite, rating, comment. We may add user, movie and favorite_movie/rated_movie relations.
 
 # How to test
 1. Run `docker compose up`
