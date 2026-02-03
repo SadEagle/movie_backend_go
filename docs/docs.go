@@ -1237,14 +1237,10 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "OAuth2Password": []
-                    }
-                ],
-                "description": "Update user",
+            }
+        },
+        "/user/me": {
+            "delete": {
                 "consumes": [
                     "application/json"
                 ],
@@ -1254,31 +1250,10 @@ const docTemplate = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "Update user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "User creation data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/reqmodel.UserUpdateRequest"
-                        }
-                    }
-                ],
+                "summary": "Delete myself",
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/sqlc.UserDatum"
-                        }
+                    "204": {
+                        "description": "No Content"
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -1308,10 +1283,14 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/user/me": {
-            "delete": {
+            },
+            "patch": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "description": "Update user",
                 "consumes": [
                     "application/json"
                 ],
@@ -1321,19 +1300,24 @@ const docTemplate = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "Delete user",
+                "summary": "Update user",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
+                        "description": "User creation data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.UserUpdateRequest"
+                        }
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.UserDatum"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",

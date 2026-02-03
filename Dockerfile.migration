@@ -1,0 +1,5 @@
+FROM golang:tip-alpine3.23
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+COPY ./script/ /migrate
+COPY ./db/migrations/ /migrate/migrations
+CMD tail -f /dev/null

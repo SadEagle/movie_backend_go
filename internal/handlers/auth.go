@@ -3,12 +3,13 @@ package handlers
 import (
 	"bytes"
 	"context"
-	_ "golang.org/x/oauth2"
 	"movie_backend_go/internal/auth"
 	"movie_backend_go/internal/crudl"
 	"movie_backend_go/internal/encode"
 	"net/http"
 	"time"
+
+	_ "golang.org/x/oauth2"
 )
 
 var EXPIRE_TIME = 24 * time.Hour
@@ -56,6 +57,7 @@ func (ho *HandlerObj) LoginHandler(rw http.ResponseWriter, r *http.Request) {
 
 	userTokenData := auth.UserTokenData{UserID: user.ID, IsAdmin: user.IsAdmin}
 	oauthToken, err := auth.OauthTokenGenerate(userTokenData)
+
 	if err != nil {
 		ho.Logger.Printf("generate token: %v", err)
 		http.Error(rw, "Can't generate user token", http.StatusInternalServerError)

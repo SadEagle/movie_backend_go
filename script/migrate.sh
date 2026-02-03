@@ -9,9 +9,9 @@ SSLMODE=${SSLMODE:-disable}
 DB_URL="postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$SSLMODE"
 
 if [ "$#" = 0 ]; then
-  /go/bin/migrate -source file:///go/db/migrations/ -database "${DB_URL}" up 
+  /go/bin/migrate -source "file:///migrate/migrations/" -database "${DB_URL}" up 
 elif [ "$1" = "down" ]; then
-  /go/bin/migrate -source file:///go/db/migrations/ -database "${DB_URL}" down
+  /go/bin/migrate -source "file:///migrate/migrations/" -database "${DB_URL}" down
 else
-  /go/bin/migrate -source file:///go/db/migrations/ -database "${DB_URL}" up "$1"
+  /go/bin/migrate -source "file:///migrate/migrations/" -database "${DB_URL}" up "$1"
 fi;

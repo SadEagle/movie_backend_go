@@ -158,6 +158,7 @@ func (ho *HandlerObj) CreateMovieHandler(rw http.ResponseWriter, r *http.Request
 	if err != nil {
 		ho.Logger.Println(err)
 		http.Error(rw, "Wrong tokend extractor middleware", http.StatusInternalServerError)
+		return
 	}
 	// Verify
 	if !userTokenData.IsAdmin {

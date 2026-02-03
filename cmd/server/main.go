@@ -70,9 +70,10 @@ func main() {
 	// User
 	r.Get("/user/{user_id}", handlerObj.GetUserHandler)
 	r.Get("/user", handlerObj.GetUserListHandler)
-	r.Post("/user", handlerObj.CreateUserHandler)
+	r.Post("/user/me", handlerObj.CreateUserHandler)
 	r.With(auth.TokenExtractionMiddleware).Patch("/user/", handlerObj.UpdateUserHandler)
-	r.With(auth.TokenExtractionMiddleware).Delete("/user/{user_id}", handlerObj.DeleteUserHandler)
+	r.With(auth.TokenExtractionMiddleware).Delete("/user/me", handlerObj.MyselfDeleteUserHandler)
+	r.Delete("/user/{user_id}", handlerObj.AdminDeleteUserHandler)
 
 	r.Get("/user/{user_id}/comment", handlerObj.GetUserCommentListHandler)
 	r.Get("/user/{user_id}/rating", handlerObj.GetUserRatingListHandler)

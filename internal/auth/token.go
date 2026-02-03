@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -10,11 +10,9 @@ import (
 )
 
 var (
-	JWTSignKey      = []byte("RandomKeyNeedToChangeLater")
-	ErrExpiredToken = errors.New("Token expired")
+	JWTSignKey  = []byte("RandomKeyNeedToChangeLater")
+	EXPIRE_TIME = 24 * time.Hour
 )
-
-var EXPIRE_TIME = 24 * time.Hour
 
 func OauthTokenGenerate(userTokenData UserTokenData) (oauth2.Token, error) {
 	experify := time.Now().Add(EXPIRE_TIME)
@@ -32,12 +30,18 @@ func OauthTokenGenerate(userTokenData UserTokenData) (oauth2.Token, error) {
 	if err != nil {
 		return oauth2.Token{}, fmt.Errorf("sign jwt key with token data: %w", err)
 	}
-
 	oauthToken := oauth2.Token{AccessToken: accessToken, TokenType: "Bearer", Expiry: experify, ExpiresIn: expiresIn}
+
 	return oauthToken, nil
 }
 
-func TokenExtract(tokenStr string) (UserTokenData, error) {
+func BearerTokenExtract(tokenStr string) (UserTokenData, error) {
+	const bearerPrefix = "Bearer "
+	if !strings.HasPrefix(tokenStr, bearerPrefix) {
+		return UserTokenData{}, ErrWrongTokenExtractor
+	}
+	tokenStr = strings.TrimPrefix(tokenStr, bearerPrefix)
+
 	token, err := jwt.ParseWithClaims(tokenStr, &UserClaims{}, func(token *jwt.Token) (any, error) {
 		return JWTSignKey, nil
 	})

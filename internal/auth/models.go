@@ -7,7 +7,7 @@ import (
 
 type UserTokenData struct {
 	UserID  pgtype.UUID `json:"user_id"`
-	IsAdmin bool        `json:"-"`
+	IsAdmin bool        `json:"is_admin"`
 }
 
 type UserClaims struct {

@@ -2,3 +2,4 @@ Dockerfile
 .git
 env
 .env
+README.md

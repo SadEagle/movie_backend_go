@@ -1,6 +1,7 @@
 services:
   backend:
-    build: ./.
+    build:
+      dockerfile: ./Dockerfile.backend
     networks:
       - dev-db-network
     ports:
@@ -35,6 +36,23 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       start_period: 10s
+
+  migration:
+    build:
+      dockerfile: ./Dockerfile.migration
+    networks:
+      - dev-db-network
+    secrets:
+      - db_passwd_secret
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PORT=${DB_PORT}
+      - DB_PASSWORD_FILE=/run/secrets/db_passwd_secret
+    depends_on:
+      dev-db:
+        condition: service_healthy
 
 networks:
   dev-db-network:
