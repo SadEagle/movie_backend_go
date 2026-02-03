@@ -1,4 +1,4 @@
--- name: GetUserByID :one
+-- name: GetUser :one
 SELECT id, name, login, encoded_password, is_admin, created_at
 FROM user_data
 WHERE id = $1;

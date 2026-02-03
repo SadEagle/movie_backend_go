@@ -1,6 +1,6 @@
 services:
   backend:
-    build: .
+    build: ./.
     networks:
       - dev-db-network
     ports:

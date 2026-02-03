@@ -50,14 +50,14 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) (int64, error)
 	return result.RowsAffected(), nil
 }
 
-const getUserByID = `-- name: GetUserByID :one
+const getUser = `-- name: GetUser :one
 SELECT id, name, login, encoded_password, is_admin, created_at
 FROM user_data
 WHERE id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (UserDatum, error) {
-	row := q.db.QueryRow(ctx, getUserByID, id)
+func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (UserDatum, error) {
+	row := q.db.QueryRow(ctx, getUser, id)
 	var i UserDatum
 	err := row.Scan(
 		&i.ID,

@@ -61,15 +61,23 @@ definitions:
         type: string
       text:
         type: string
-      user_id:
-        type: string
     type: object
-  reqmodel.CommentRequest:
+  reqmodel.CommentUpdateRequest:
     properties:
       text:
         type: string
     type: object
-  reqmodel.FavoriteRequest:
+  reqmodel.FavoriteCreateRequest:
+    properties:
+      movie_id:
+        type: string
+    type: object
+  reqmodel.FavoriteDeleteRequest:
+    properties:
+      movie_id:
+        type: string
+    type: object
+  reqmodel.FavoriteGetRequest:
     properties:
       movie_id:
         type: string
@@ -83,6 +91,11 @@ definitions:
           $ref: '#/definitions/sqlc.GetMovieCommentListRow'
         type: array
       movie_id:
+        type: string
+    type: object
+  reqmodel.MovieCreateRequest:
+    properties:
+      title:
         type: string
     type: object
   reqmodel.MovieFavoriteListResponse:
@@ -110,7 +123,7 @@ definitions:
           $ref: '#/definitions/sqlc.GetMovieRatingListRow'
         type: array
     type: object
-  reqmodel.MovieRequest:
+  reqmodel.MovieUpdateRequest:
     properties:
       title:
         type: string
@@ -121,8 +134,6 @@ definitions:
         type: string
       rating:
         type: integer
-      user_id:
-        type: string
     type: object
   reqmodel.RatingIDRequest:
     properties:
@@ -137,8 +148,6 @@ definitions:
         type: string
       rating:
         type: integer
-      user_id:
-        type: string
     type: object
   reqmodel.UserCommentListResponse:
     properties:
@@ -174,7 +183,7 @@ definitions:
           $ref: '#/definitions/sqlc.GetUserRatingListRow'
         type: array
     type: object
-  reqmodel.UserRequest:
+  reqmodel.UserUpdateRequest:
     properties:
       login:
         type: string
@@ -201,19 +210,6 @@ definitions:
       movie_id:
         type: string
       user_id:
-        type: string
-    type: object
-  sqlc.GetMovieByIDRow:
-    properties:
-      amount_rates:
-        type: integer
-      created_at:
-        $ref: '#/definitions/pgtype.Timestamp'
-      id:
-        type: string
-      rating:
-        type: number
-      title:
         type: string
     type: object
   sqlc.GetMovieCommentListRow:
@@ -298,7 +294,7 @@ paths:
       parameters:
       - description: Login
         in: formData
-        name: login
+        name: username
         required: true
         type: string
       - description: Password
@@ -346,6 +342,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/sqlc.Comment'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -358,6 +360,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Create comments
       tags:
       - comment
@@ -376,6 +380,12 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -388,9 +398,12 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Delete comment
       tags:
       - comment
+      - admin
     get:
       consumes:
       - application/json
@@ -423,7 +436,6 @@ paths:
       summary: Get comment
       tags:
       - comment
-  /comment/{commentID}:
     patch:
       consumes:
       - application/json
@@ -438,7 +450,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/reqmodel.CommentRequest'
+          $ref: '#/definitions/reqmodel.CommentUpdateRequest'
       produces:
       - application/json
       responses:
@@ -446,6 +458,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/sqlc.Comment'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -458,6 +476,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Update comments
       tags:
       - comment
@@ -471,7 +491,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/reqmodel.FavoriteRequest'
+          $ref: '#/definitions/reqmodel.FavoriteDeleteRequest'
       produces:
       - application/json
       responses:
@@ -489,6 +509,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Delete favorite
       tags:
       - favorite
@@ -496,12 +518,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Comment update data
+      - description: Favorite data
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/reqmodel.FavoriteRequest'
+          $ref: '#/definitions/reqmodel.FavoriteGetRequest'
       produces:
       - application/json
       responses:
@@ -534,7 +556,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/reqmodel.FavoriteRequest'
+          $ref: '#/definitions/reqmodel.FavoriteCreateRequest'
       produces:
       - application/json
       responses:
@@ -542,6 +564,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/sqlc.Favorite'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -554,6 +582,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Add favorite movie
       tags:
       - favorite
@@ -568,7 +598,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sqlc.GetMovieByIDRow'
+            additionalProperties:
+              type: string
+            type: object
         "503":
           description: Service Unavailable
           schema:
@@ -614,7 +646,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/reqmodel.MovieRequest'
+          $ref: '#/definitions/reqmodel.MovieCreateRequest'
       produces:
       - application/json
       responses:
@@ -622,6 +654,12 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/sqlc.Movie'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -634,9 +672,12 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Create movie
       tags:
       - movie
+      - admin
   /movie/{movie_id}:
     delete:
       consumes:
@@ -652,6 +693,12 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -664,9 +711,12 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Delete movie
       tags:
       - movie
+      - admin
     get:
       consumes:
       - application/json
@@ -683,7 +733,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/sqlc.GetMovieByIDRow'
+            $ref: '#/definitions/sqlc.Movie'
         "404":
           description: Not Found
           schema:
@@ -714,7 +764,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/reqmodel.MovieRequest'
+          $ref: '#/definitions/reqmodel.MovieUpdateRequest'
       produces:
       - application/json
       responses:
@@ -722,6 +772,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/sqlc.Movie'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -734,9 +790,12 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Update movie
       tags:
       - movie
+      - admin
   /movie/{movie_id}/comment:
     get:
       consumes:
@@ -770,6 +829,40 @@ paths:
       summary: Get movie comments list
       tags:
       - comment
+      - movie
+  /movie/{movie_id}/favorite:
+    get:
+      consumes:
+      - application/json
+      description: Get list users who marked this movie as favorite
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reqmodel.MovieFavoriteListResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get movie favorite list
+      tags:
+      - favorite
       - movie
   /movie/{movie_id}/rating:
     get:
@@ -805,40 +898,6 @@ paths:
       tags:
       - rating
       - movie
-  /movie/{user_id}/favorite:
-    get:
-      consumes:
-      - application/json
-      description: Get list users who marked this movie as favorite
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/reqmodel.MovieFavoriteListResponse'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get movie favorite list
-      tags:
-      - favorite
-      - movie
   /rating:
     delete:
       consumes:
@@ -849,6 +908,12 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -861,9 +926,12 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Delete rating
       tags:
       - rating
+      - admin
     patch:
       consumes:
       - application/json
@@ -882,6 +950,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/sqlc.Rating'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -894,6 +968,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Update rating
       tags:
       - rating
@@ -902,11 +978,6 @@ paths:
       - application/json
       description: Rate movie by user
       parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
       - description: Rate movie data
         in: body
         name: request
@@ -920,6 +991,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/sqlc.Rating'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -932,6 +1009,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Create rating
       tags:
       - rating
@@ -962,25 +1041,31 @@ paths:
       summary: Show user list
       tags:
       - user
-    post:
+    patch:
       consumes:
       - application/json
+      description: Update user
       parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
       - description: User creation data
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/reqmodel.UserRequest'
+          $ref: '#/definitions/reqmodel.UserUpdateRequest'
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
             $ref: '#/definitions/sqlc.UserDatum'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
           schema:
             additionalProperties:
               type: string
@@ -997,6 +1082,45 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
+      summary: Update user
+      tags:
+      - user
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - in: formData
+        name: login
+        type: string
+      - in: formData
+        name: name
+        type: string
+      - in: formData
+        name: password
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/sqlc.UserDatum'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - OAuth2Password: []
       summary: Create user
       tags:
       - user
@@ -1004,6 +1128,7 @@ paths:
     delete:
       consumes:
       - application/json
+      description: Delete any user as admin
       parameters:
       - description: User ID
         in: path
@@ -1015,6 +1140,12 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -1027,9 +1158,12 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - OAuth2Password: []
       summary: Delete user
       tags:
       - user
+      - admin
     get:
       consumes:
       - application/json
@@ -1060,50 +1194,6 @@ paths:
               type: string
             type: object
       summary: Show user
-      tags:
-      - user
-    patch:
-      consumes:
-      - application/json
-      description: Update user
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      - description: User creation data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/reqmodel.UserRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/sqlc.UserDatum'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update user
       tags:
       - user
   /user/{user_id}/comment:
@@ -1208,4 +1298,45 @@ paths:
       tags:
       - rating
       - user
+  /user/me:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete user
+      tags:
+      - user
+securityDefinitions:
+  OAuth2Password:
+    flow: password
+    tokenUrl: http://localhost:8080/auth/login
+    type: oauth2
 swagger: "2.0"

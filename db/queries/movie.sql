@@ -1,4 +1,4 @@
--- name: GetMovieByID :one
+-- name: GetMovie :one
 SELECT id, title, COALESCE(amount_rates, 0), COALESCE(rating, 0), created_at
 FROM (
   select * from movie where id = $1

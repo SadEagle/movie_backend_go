@@ -33,7 +33,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Login",
-                        "name": "login",
+                        "name": "username",
                         "in": "formData",
                         "required": true
                     },
@@ -75,6 +75,11 @@ const docTemplate = `{
         },
         "/comment": {
             "post": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -103,62 +108,13 @@ const docTemplate = `{
                             "$ref": "#/definitions/sqlc.Comment"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
                             }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/comment/{commentID}": {
-            "patch": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "comment"
-                ],
-                "summary": "Update comments",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "movie ID",
-                        "name": "comment_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Comment update data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/reqmodel.CommentRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/sqlc.Comment"
                         }
                     },
                     "404": {
@@ -232,6 +188,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -239,7 +200,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "comment"
+                    "comment",
+                    "admin"
                 ],
                 "summary": "Delete comment",
                 "parameters": [
@@ -254,6 +216,85 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment"
+                ],
+                "summary": "Update comments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "movie ID",
+                        "name": "comment_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Comment update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.CommentUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.Comment"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "404": {
                         "description": "Not Found",
@@ -290,12 +331,12 @@ const docTemplate = `{
                 "summary": "Get favorite",
                 "parameters": [
                     {
-                        "description": "Comment update data",
+                        "description": "Favorite data",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.FavoriteRequest"
+                            "$ref": "#/definitions/reqmodel.FavoriteGetRequest"
                         }
                     }
                 ],
@@ -327,6 +368,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "description": "Add movie to user's favorite",
                 "consumes": [
                     "application/json"
@@ -345,7 +391,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.FavoriteRequest"
+                            "$ref": "#/definitions/reqmodel.FavoriteCreateRequest"
                         }
                     }
                 ],
@@ -354,6 +400,15 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/sqlc.Favorite"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
@@ -377,6 +432,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -394,7 +454,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.FavoriteRequest"
+                            "$ref": "#/definitions/reqmodel.FavoriteDeleteRequest"
                         }
                     }
                 ],
@@ -440,7 +500,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sqlc.GetMovieByIDRow"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "503": {
@@ -496,6 +559,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -503,7 +571,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "movie"
+                    "movie",
+                    "admin"
                 ],
                 "summary": "Create movie",
                 "parameters": [
@@ -513,7 +582,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.MovieRequest"
+                            "$ref": "#/definitions/reqmodel.MovieCreateRequest"
                         }
                     }
                 ],
@@ -522,6 +591,15 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/sqlc.Movie"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
@@ -571,7 +649,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sqlc.GetMovieByIDRow"
+                            "$ref": "#/definitions/sqlc.Movie"
                         }
                     },
                     "404": {
@@ -595,6 +673,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -602,7 +685,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "movie"
+                    "movie",
+                    "admin"
                 ],
                 "summary": "Delete movie",
                 "parameters": [
@@ -617,6 +701,15 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "404": {
                         "description": "Not Found",
@@ -639,6 +732,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "description": "Update movie",
                 "consumes": [
                     "application/json"
@@ -647,7 +745,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "movie"
+                    "movie",
+                    "admin"
                 ],
                 "summary": "Update movie",
                 "parameters": [
@@ -664,7 +763,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/reqmodel.MovieRequest"
+                            "$ref": "#/definitions/reqmodel.MovieUpdateRequest"
                         }
                     }
                 ],
@@ -673,6 +772,15 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/sqlc.Movie"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
@@ -747,6 +855,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/movie/{movie_id}/favorite": {
+            "get": {
+                "description": "Get list users who marked this movie as favorite",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "favorite",
+                    "movie"
+                ],
+                "summary": "Get movie favorite list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "movie_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.MovieFavoriteListResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/movie/{movie_id}/rating": {
             "get": {
                 "description": "Get users who rated movie",
@@ -798,59 +957,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/movie/{user_id}/favorite": {
-            "get": {
-                "description": "Get list users who marked this movie as favorite",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "favorite",
-                    "movie"
-                ],
-                "summary": "Get movie favorite list",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/reqmodel.MovieFavoriteListResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/rating": {
             "post": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "description": "Rate movie by user",
                 "consumes": [
                     "application/json"
@@ -863,13 +976,6 @@ const docTemplate = `{
                 ],
                 "summary": "Create rating",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Rate movie data",
                         "name": "request",
@@ -885,6 +991,15 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/sqlc.Rating"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
@@ -908,6 +1023,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "description": "Delete certain rating",
                 "consumes": [
                     "application/json"
@@ -916,12 +1036,22 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "rating"
+                    "rating",
+                    "admin"
                 ],
                 "summary": "Delete rating",
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "404": {
                         "description": "Not Found",
@@ -944,6 +1074,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "description": "Update rating",
                 "consumes": [
                     "application/json"
@@ -971,6 +1106,15 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/sqlc.Rating"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
@@ -1035,8 +1179,13 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -1047,13 +1196,19 @@ const docTemplate = `{
                 "summary": "Create user",
                 "parameters": [
                     {
-                        "description": "User creation data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/reqmodel.UserRequest"
-                        }
+                        "type": "string",
+                        "name": "login",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "password",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1063,8 +1218,125 @@ const docTemplate = `{
                             "$ref": "#/definitions/sqlc.UserDatum"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "description": "Update user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Update user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User creation data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.UserUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sqlc.UserDatum"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/me": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Delete user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1143,6 +1415,12 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "description": "Delete any user as admin",
                 "consumes": [
                     "application/json"
                 ],
@@ -1150,7 +1428,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "user",
+                    "admin"
                 ],
                 "summary": "Delete user",
                 "parameters": [
@@ -1166,65 +1445,8 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Update user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Update user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "User creation data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/reqmodel.UserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/sqlc.UserDatum"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1470,13 +1692,10 @@ const docTemplate = `{
                 },
                 "text": {
                     "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
                 }
             }
         },
-        "reqmodel.CommentRequest": {
+        "reqmodel.CommentUpdateRequest": {
             "type": "object",
             "properties": {
                 "text": {
@@ -1484,7 +1703,23 @@ const docTemplate = `{
                 }
             }
         },
-        "reqmodel.FavoriteRequest": {
+        "reqmodel.FavoriteCreateRequest": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.FavoriteDeleteRequest": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.FavoriteGetRequest": {
             "type": "object",
             "properties": {
                 "movie_id": {
@@ -1505,6 +1740,14 @@ const docTemplate = `{
                     }
                 },
                 "movie_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.MovieCreateRequest": {
+            "type": "object",
+            "properties": {
+                "title": {
                     "type": "string"
                 }
             }
@@ -1548,7 +1791,7 @@ const docTemplate = `{
                 }
             }
         },
-        "reqmodel.MovieRequest": {
+        "reqmodel.MovieUpdateRequest": {
             "type": "object",
             "properties": {
                 "title": {
@@ -1564,9 +1807,6 @@ const docTemplate = `{
                 },
                 "rating": {
                     "type": "integer"
-                },
-                "user_id": {
-                    "type": "string"
                 }
             }
         },
@@ -1589,9 +1829,6 @@ const docTemplate = `{
                 },
                 "rating": {
                     "type": "integer"
-                },
-                "user_id": {
-                    "type": "string"
                 }
             }
         },
@@ -1648,7 +1885,7 @@ const docTemplate = `{
                 }
             }
         },
-        "reqmodel.UserRequest": {
+        "reqmodel.UserUpdateRequest": {
             "type": "object",
             "properties": {
                 "login": {
@@ -1689,26 +1926,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "sqlc.GetMovieByIDRow": {
-            "type": "object",
-            "properties": {
-                "amount_rates": {
-                    "type": "integer"
-                },
-                "created_at": {
-                    "$ref": "#/definitions/pgtype.Timestamp"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "rating": {
-                    "type": "number"
-                },
-                "title": {
                     "type": "string"
                 }
             }
@@ -1810,6 +2027,13 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "OAuth2Password": {
+            "type": "oauth2",
+            "flow": "password",
+            "tokenUrl": "http://localhost:8080/auth/login"
         }
     },
     "externalDocs": {
