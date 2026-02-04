@@ -76,11 +76,6 @@ definitions:
     properties:
       movie_id:
         type: string
-    type: object
-  reqmodel.FavoriteGetRequest:
-    properties:
-      movie_id:
-        type: string
       user_id:
         type: string
     type: object
@@ -128,6 +123,11 @@ definitions:
       title:
         type: string
     type: object
+  reqmodel.MyFavoriteDeleteRequest:
+    properties:
+      movie_id:
+        type: string
+    type: object
   reqmodel.RatingCreateRequest:
     properties:
       movie_id:
@@ -135,11 +135,16 @@ definitions:
       rating:
         type: integer
     type: object
-  reqmodel.RatingIDRequest:
+  reqmodel.RatingDeleteRequest:
     properties:
       movie_id:
         type: string
       user_id:
+        type: string
+    type: object
+  reqmodel.RatingMyDeleteRequest:
+    properties:
+      movie_id:
         type: string
     type: object
   reqmodel.RatingUpdateRequest:
@@ -404,6 +409,7 @@ paths:
       tags:
       - comment
       - admin
+      - user
     get:
       consumes:
       - application/json
@@ -497,6 +503,12 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
@@ -514,16 +526,21 @@ paths:
       summary: Delete favorite
       tags:
       - favorite
+      - admin
     get:
       consumes:
       - application/json
       parameters:
-      - description: Favorite data
-        in: body
-        name: request
+      - description: User ID
+        in: query
+        name: user_id
         required: true
-        schema:
-          $ref: '#/definitions/reqmodel.FavoriteGetRequest'
+        type: string
+      - description: Movie ID
+        in: query
+        name: movie_id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -587,6 +604,40 @@ paths:
       summary: Add favorite movie
       tags:
       - favorite
+  /favorite/my:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Comment delete data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.MyFavoriteDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - OAuth2Password: []
+      summary: Delete my favorite
+      tags:
+      - favorite
+      - user
   /healthcheck:
     get:
       consumes:
@@ -903,6 +954,13 @@ paths:
       consumes:
       - application/json
       description: Delete certain rating
+      parameters:
+      - description: Delete rating
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.RatingDeleteRequest'
       produces:
       - application/json
       responses:
@@ -1014,6 +1072,46 @@ paths:
       summary: Create rating
       tags:
       - rating
+  /rating/my:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Delete rating
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/reqmodel.RatingMyDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - OAuth2Password: []
+      summary: Delete my rating
+      tags:
+      - rating
+      - user
   /user:
     get:
       consumes:
@@ -1322,6 +1420,96 @@ paths:
       - OAuth2Password: []
       summary: Update user
       tags:
+      - user
+  /user/my/comment:
+    get:
+      consumes:
+      - application/json
+      description: Get current user comment list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reqmodel.UserCommentListResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - OAuth2Password: []
+      summary: Get my user comments list
+      tags:
+      - comment
+      - user
+  /user/my/favorite:
+    get:
+      consumes:
+      - application/json
+      description: Get current user favorite list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reqmodel.UserFavoriteListResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - OAuth2Password: []
+      summary: Get my user favorite list
+      tags:
+      - favorite
+      - user
+  /user/my/rating:
+    get:
+      consumes:
+      - application/json
+      description: Get current user rating list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/reqmodel.UserRatingListResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - OAuth2Password: []
+      summary: Get my user rating list
+      tags:
+      - rating
       - user
 securityDefinitions:
   OAuth2Password:

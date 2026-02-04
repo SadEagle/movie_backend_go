@@ -44,6 +44,37 @@ func (ho *HandlerObj) GetMovieCommentListHandler(rw http.ResponseWriter, r *http
 	writeResponseBody(rw, movieCommentListResp, "movie comment list")
 }
 
+// @Summary 		Get my user comments list
+// @Description	Get current user comment list
+// @Tags        comment, user
+// @Accept      json
+// @Produce     json
+// @Security 		OAuth2Password
+// @Success     200		{object}	reqmodel.UserCommentListResponse
+// @Failure     404  	{object}  map[string]string
+// @Failure     500  	{object}  map[string]string
+// @Router      /user/my/comment [get]
+func (ho *HandlerObj) GetMyUserCommentListHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)
+	defer close()
+
+	// Extract token
+	userTokenData, err := auth.GetTokenDataContext(ctx)
+	if err != nil {
+		ho.Logger.Println(err)
+		http.Error(rw, "Wrong tokend extractor middleware", http.StatusInternalServerError)
+	}
+
+	userCommentList, err := crudl.GetUserCommentList(ctx, ho.QuerierDB, userTokenData.UserID)
+	if err != nil {
+		ho.Logger.Printf("proceed getting user comment list: %v", err)
+		http.Error(rw, "Can't get user comment list", http.StatusNotFound)
+		return
+	}
+	userCommentListResp := reqmodel.UserCommentListResponse{UserID: userTokenData.UserID, UserCommentList: userCommentList}
+	writeResponseBody(rw, userCommentListResp, "user comment list")
+}
+
 // @Summary 		Get user comments list
 // @Description	Get comment list for certain user
 // @Tags        comment, user
@@ -213,7 +244,7 @@ func (ho *HandlerObj) UpdateCommentHandler(rw http.ResponseWriter, r *http.Reque
 }
 
 // @Summary      Delete comment
-// @Tags         comment, admin
+// @Tags         comment, admin, user
 // @Accept       json
 // @Produce      json
 // @Security 		 OAuth2Password

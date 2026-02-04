@@ -201,7 +201,8 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "comment",
-                    "admin"
+                    "admin",
+                    "user"
                 ],
                 "summary": "Delete comment",
                 "parameters": [
@@ -331,13 +332,18 @@ const docTemplate = `{
                 "summary": "Get favorite",
                 "parameters": [
                     {
-                        "description": "Favorite data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/reqmodel.FavoriteGetRequest"
-                        }
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "movie_id",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -444,7 +450,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "favorite"
+                    "favorite",
+                    "admin"
                 ],
                 "summary": "Delete favorite",
                 "parameters": [
@@ -455,6 +462,69 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/reqmodel.FavoriteDeleteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/favorite/my": {
+            "delete": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "favorite",
+                    "user"
+                ],
+                "summary": "Delete my favorite",
+                "parameters": [
+                    {
+                        "description": "Comment delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.MyFavoriteDeleteRequest"
                         }
                     }
                 ],
@@ -1040,6 +1110,17 @@ const docTemplate = `{
                     "admin"
                 ],
                 "summary": "Delete rating",
+                "parameters": [
+                    {
+                        "description": "Delete rating",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.RatingDeleteRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -1107,6 +1188,69 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/sqlc.Rating"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/rating/my": {
+            "delete": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rating",
+                    "user"
+                ],
+                "summary": "Delete my rating",
+                "parameters": [
+                    {
+                        "description": "Delete rating",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.RatingMyDeleteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -1326,6 +1470,147 @@ const docTemplate = `{
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/my/comment": {
+            "get": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "description": "Get current user comment list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment",
+                    "user"
+                ],
+                "summary": "Get my user comments list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.UserCommentListResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/my/favorite": {
+            "get": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "description": "Get current user favorite list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "favorite",
+                    "user"
+                ],
+                "summary": "Get my user favorite list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.UserFavoriteListResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/my/rating": {
+            "get": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "description": "Get current user rating list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rating",
+                    "user"
+                ],
+                "summary": "Get my user rating list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/reqmodel.UserRatingListResponse"
                         }
                     },
                     "404": {
@@ -1700,14 +1985,6 @@ const docTemplate = `{
             "properties": {
                 "movie_id": {
                     "type": "string"
-                }
-            }
-        },
-        "reqmodel.FavoriteGetRequest": {
-            "type": "object",
-            "properties": {
-                "movie_id": {
-                    "type": "string"
                 },
                 "user_id": {
                     "type": "string"
@@ -1783,6 +2060,14 @@ const docTemplate = `{
                 }
             }
         },
+        "reqmodel.MyFavoriteDeleteRequest": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                }
+            }
+        },
         "reqmodel.RatingCreateRequest": {
             "type": "object",
             "properties": {
@@ -1794,13 +2079,21 @@ const docTemplate = `{
                 }
             }
         },
-        "reqmodel.RatingIDRequest": {
+        "reqmodel.RatingDeleteRequest": {
             "type": "object",
             "properties": {
                 "movie_id": {
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "reqmodel.RatingMyDeleteRequest": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
                     "type": "string"
                 }
             }

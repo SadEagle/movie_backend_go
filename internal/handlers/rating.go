@@ -45,6 +45,37 @@ func (ho *HandlerObj) GetUserRatingListHandler(rw http.ResponseWriter, r *http.R
 	writeResponseBody(rw, ratedMovieListResponse, "user rating list")
 }
 
+// @Summary			 Get my user rating list
+// @Description  Get current user rating list
+// @Tags         rating, user
+// @Accept       json
+// @Produce      json
+// @Security 		 OAuth2Password
+// @Success      200  {object}  reqmodel.UserRatingListResponse
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/my/rating [get]
+func (ho *HandlerObj) GetMyUserRatingListHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)
+	defer close()
+
+	// Extract token
+	userTokenData, err := auth.GetTokenDataContext(ctx)
+	if err != nil {
+		ho.Logger.Println(err)
+		http.Error(rw, "Wrong tokend extractor middleware", http.StatusInternalServerError)
+	}
+
+	userRatingList, err := crudl.GetUserRatingList(ctx, ho.QuerierDB, userTokenData.UserID)
+	if err != nil {
+		ho.Logger.Printf("proceed rated movie list: %v", err)
+		http.Error(rw, "Can't proceed rated movie list", http.StatusNotFound)
+		return
+	}
+	ratedMovieListResponse := reqmodel.UserRatingListResponse{UserID: userTokenData.UserID, UserRatingList: userRatingList}
+	writeResponseBody(rw, ratedMovieListResponse, "user rating list")
+}
+
 // @Summary			 Get movie rating list
 // @Description  Get users who rated movie
 // @Tags         rating, movie
@@ -81,7 +112,8 @@ func (ho *HandlerObj) GetMovieRatingListHandler(rw http.ResponseWriter, r *http.
 // @Tags         rating
 // @Accept       json
 // @Produce      json
-// @Param        request   	body      reqmodel.RatingIDRequest  true  "Rating ID"
+// @Param        user_id		query		string	true	"User ID"
+// @Param        movie_id   query		string	true	"Movie ID"
 // @Success      200  {object}  sqlc.Rating
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -91,14 +123,23 @@ func (ho *HandlerObj) GetRatingHandler(rw http.ResponseWriter, r *http.Request) 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	var ratingReq reqmodel.RatingIDRequest
-	err := decoder.Decode(&ratingReq)
-	if err != nil && err != io.EOF {
-		ho.Logger.Println(err)
-		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
+	movieIDStr := r.URL.Query().Get("movie_id")
+	userIDStr := r.URL.Query().Get("user_id")
+	if movieIDStr == "" || userIDStr == "" {
+		ho.Logger.Println("Movie ID or User ID wasn't found")
+		http.Error(rw, "Movie ID or User ID wasn't found", http.StatusBadRequest)
 		return
 	}
-	ratingGet := sqlc.GetRatingParams{UserID: ratingReq.UserID, MovieID: ratingReq.MovieID}
+	var movieID, userID pgtype.UUID
+	errMovie := movieID.Scan(movieID)
+	errUser := userID.Scan(userID)
+	if errMovie != nil || errUser != nil {
+		ho.Logger.Println("Movie ID or User ID contain wrong style")
+		http.Error(rw, "Movie ID or User ID contain wrong style", http.StatusBadRequest)
+		return
+	}
+
+	ratingGet := sqlc.GetRatingParams{UserID: userID, MovieID: movieID}
 
 	rating, err := crudl.GetRating(ctx, ho.QuerierDB, ratingGet)
 	if err != nil {
@@ -205,6 +246,7 @@ func (ho *HandlerObj) UpdateRatingHandler(rw http.ResponseWriter, r *http.Reques
 // @Produce      json
 // @Security	 	 OAuth2Password
 // @Success      204
+// @Param        request   	body      reqmodel.RatingDeleteRequest  true  "Delete rating"
 // @Failure      401 {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -216,7 +258,7 @@ func (ho *HandlerObj) DeleteRatingHandler(rw http.ResponseWriter, r *http.Reques
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	var ratingDeleteReq reqmodel.RatingIDRequest
+	var ratingDeleteReq reqmodel.RatingDeleteRequest
 	err := decoder.Decode(&ratingDeleteReq)
 	if err != nil && err != io.EOF {
 		ho.Logger.Println(err)
@@ -230,14 +272,55 @@ func (ho *HandlerObj) DeleteRatingHandler(rw http.ResponseWriter, r *http.Reques
 		ho.Logger.Println(err)
 		http.Error(rw, "Wrong tokend extractor middleware", http.StatusInternalServerError)
 	}
-	// Verify token user or admin is owner
-	if !userTokenData.IsAdmin && userTokenData.UserID != ratingDeleteReq.UserID {
+	if !userTokenData.IsAdmin {
 		ho.Logger.Println("Unauthorized user")
-		http.Error(rw, "Unauthorized user", http.StatusUnauthorized)
+		http.Error(rw, "Need to be admin for this action", http.StatusUnauthorized)
 		return
 	}
 
 	ratingDelete := sqlc.DeleteRatingParams{UserID: ratingDeleteReq.UserID, MovieID: ratingDeleteReq.MovieID}
+	if err := crudl.DeleteRating(ctx, ho.QuerierDB, ratingDelete); err != nil {
+		ho.Logger.Printf("proceed delete rating request: %v", err)
+		http.Error(rw, "Can't delete rating", http.StatusBadRequest)
+		return
+	}
+	rw.WriteHeader(http.StatusNoContent)
+}
+
+// @Summary			 Delete my rating
+// @Tags         rating, user
+// @Accept       json
+// @Produce      json
+// @Security	 	 OAuth2Password
+// @Success      204
+// @Param        request   	body      reqmodel.RatingMyDeleteRequest  true  "Delete rating"
+// @Failure      401 {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /rating/my [delete]
+func (ho *HandlerObj) DeleteMyRatingHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)
+	defer close()
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	var ratingDeleteReq reqmodel.RatingMyDeleteRequest
+	err := decoder.Decode(&ratingDeleteReq)
+	if err != nil && err != io.EOF {
+		ho.Logger.Println(err)
+		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
+		return
+	}
+
+	// Extract token
+	userTokenData, err := auth.GetTokenDataContext(ctx)
+	if err != nil {
+		ho.Logger.Println(err)
+		http.Error(rw, "Wrong tokend extractor middleware", http.StatusInternalServerError)
+	}
+
+	ratingDelete := sqlc.DeleteRatingParams{UserID: userTokenData.UserID, MovieID: ratingDeleteReq.MovieID}
 	if err := crudl.DeleteRating(ctx, ho.QuerierDB, ratingDelete); err != nil {
 		ho.Logger.Printf("proceed delete rating request: %v", err)
 		http.Error(rw, "Can't delete rating", http.StatusBadRequest)

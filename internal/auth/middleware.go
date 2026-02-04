@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -17,7 +16,6 @@ func TokenExtractionMiddleware(next http.Handler) http.Handler {
 		}
 
 		userTokenData, err := BearerTokenExtract(tokenStr)
-		fmt.Printf("Middleware tocken: %v\n", userTokenData)
 		if err != nil {
 			http.Error(rw, "Can't extract token data", http.StatusBadRequest)
 			return

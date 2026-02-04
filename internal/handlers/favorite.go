@@ -43,7 +43,38 @@ func (ho *HandlerObj) GetUserFavoriteListHandler(rw http.ResponseWriter, r *http
 
 	favUserListResp := reqmodel.UserFavoriteListResponse{UserID: userID, FavoriteMovieIDs: favMovieList}
 	writeResponseBody(rw, favUserListResp, "user's favorite movie list")
+}
 
+// @Summary      Get my user favorite list
+// @Description  Get current user favorite list
+// @Tags         favorite, user
+// @Accept       json
+// @Produce      json
+// @Security 		 OAuth2Password
+// @Success      200  {object}  reqmodel.UserFavoriteListResponse
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/my/favorite [get]
+func (ho *HandlerObj) GetMyUserFavoriteListHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)
+	defer close()
+
+	// Extract token
+	userTokenData, err := auth.GetTokenDataContext(ctx)
+	if err != nil {
+		ho.Logger.Println(err)
+		http.Error(rw, "Wrong tokend extractor middleware", http.StatusInternalServerError)
+	}
+
+	favMovieList, err := ho.QuerierDB.GetUserFavoriteList(ctx, userTokenData.UserID)
+	if err != nil {
+		ho.Logger.Printf("get user's favorite movie list from db: %v", err)
+		http.Error(rw, "Can't get user's favorite movie list", http.StatusBadRequest)
+		return
+	}
+
+	favUserListResp := reqmodel.UserFavoriteListResponse{UserID: userTokenData.UserID, FavoriteMovieIDs: favMovieList}
+	writeResponseBody(rw, favUserListResp, "user's favorite movie list")
 }
 
 // @Summary      Get movie favorite list
@@ -82,7 +113,8 @@ func (ho *HandlerObj) GetMovieFavoriteListHandler(rw http.ResponseWriter, r *htt
 // @Tags         favorite
 // @Accept       json
 // @Produce      json
-// @Param        request   body		reqmodel.FavoriteGetRequest	true	"Favorite data"
+// @Param        user_id		query		string	true	"User ID"
+// @Param        movie_id   query		string	true	"Movie ID"
 // @Success      200  {object}  sqlc.Favorite
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -91,18 +123,23 @@ func (ho *HandlerObj) GetFavoriteHandler(rw http.ResponseWriter, r *http.Request
 	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)
 	defer close()
 
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
-
-	var favReq reqmodel.FavoriteGetRequest
-	err := decoder.Decode(&favReq)
-	if err != nil && err != io.EOF {
-		ho.Logger.Printf("proceed body request: %v", err)
-		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
+	movieIDStr := r.URL.Query().Get("movie_id")
+	userIDStr := r.URL.Query().Get("user_id")
+	if movieIDStr == "" || userIDStr == "" {
+		ho.Logger.Println("Movie ID or User ID wasn't found")
+		http.Error(rw, "Movie ID or User ID wasn't found", http.StatusBadRequest)
+		return
+	}
+	var movieID, userID pgtype.UUID
+	errMovie := movieID.Scan(movieID)
+	errUser := userID.Scan(userID)
+	if errMovie != nil || errUser != nil {
+		ho.Logger.Println("Movie ID or User ID contain wrong style")
+		http.Error(rw, "Movie ID or User ID contain wrong style", http.StatusBadRequest)
 		return
 	}
 
-	favGet := sqlc.GetFavoriteParams{UserID: favReq.UserID, MovieID: favReq.MovieID}
+	favGet := sqlc.GetFavoriteParams{UserID: userID, MovieID: movieID}
 
 	favorite, err := ho.QuerierDB.GetFavorite(ctx, favGet)
 	if err != nil {
@@ -161,12 +198,13 @@ func (ho *HandlerObj) CreateFavoriteHandler(rw http.ResponseWriter, r *http.Requ
 }
 
 // @Summary		Delete favorite
-// @Tags    	favorite
+// @Tags    	favorite, admin
 // @Accept    json
 // @Produce   json
 // @Security  OAuth2Password
 // @Param			request   body		reqmodel.FavoriteDeleteRequest	true	"Comment delete data"
 // @Success   204
+// @Failure   401  {object}  map[string]string
 // @Failure   404  {object}  map[string]string
 // @Failure   500  {object}  map[string]string
 // @Router    /favorite [delete]
@@ -178,6 +216,52 @@ func (ho *HandlerObj) DeleteFavoriteHandler(rw http.ResponseWriter, r *http.Requ
 	decoder.DisallowUnknownFields()
 
 	var favReq reqmodel.FavoriteDeleteRequest
+	err := decoder.Decode(&favReq)
+	if err != nil && err != io.EOF {
+		ho.Logger.Printf("proceed body request: %v", err)
+		http.Error(rw, "Can't proceed body request", http.StatusBadRequest)
+		return
+	}
+
+	userTokenData, err := auth.GetTokenDataContext(ctx)
+	if err != nil {
+		ho.Logger.Println(err)
+		http.Error(rw, "Wrong tokend extractor middleware", http.StatusInternalServerError)
+	}
+
+	if !userTokenData.IsAdmin {
+		ho.Logger.Println(err)
+		http.Error(rw, "Need to be admin for this action", http.StatusUnauthorized)
+	}
+
+	favDelete := sqlc.DeleteFavoriteParams{UserID: favReq.UserID, MovieID: favReq.MovieID}
+
+	if err := crudl.DeleteFavorite(ctx, ho.QuerierDB, favDelete); err != nil {
+		ho.Logger.Printf("Delete favorite: %v", err)
+		http.Error(rw, "Can't delete favorite", http.StatusBadRequest)
+		return
+	}
+	rw.WriteHeader(http.StatusNoContent)
+}
+
+// @Summary		Delete my favorite
+// @Tags    	favorite, user
+// @Accept    json
+// @Produce   json
+// @Security  OAuth2Password
+// @Param			request   body		reqmodel.MyFavoriteDeleteRequest	true	"Comment delete data"
+// @Success   204
+// @Failure   404  {object}  map[string]string
+// @Failure   500  {object}  map[string]string
+// @Router    /favorite/my [delete]
+func (ho *HandlerObj) DeleteMyFavoriteHandler(rw http.ResponseWriter, r *http.Request) {
+	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)
+	defer close()
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	var favReq reqmodel.MyFavoriteDeleteRequest
 	err := decoder.Decode(&favReq)
 	if err != nil && err != io.EOF {
 		ho.Logger.Printf("proceed body request: %v", err)

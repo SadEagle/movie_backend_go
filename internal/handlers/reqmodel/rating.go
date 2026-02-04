@@ -16,7 +16,11 @@ type RatingUpdateRequest struct {
 	Rating  *int16      `json:"rating"`
 }
 
-type RatingIDRequest struct {
+type RatingMyDeleteRequest struct {
+	MovieID pgtype.UUID `json:"movie_id"`
+}
+
+type RatingDeleteRequest struct {
 	UserID  pgtype.UUID `json:"user_id"`
 	MovieID pgtype.UUID `json:"movie_id"`
 }

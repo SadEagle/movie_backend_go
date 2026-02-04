@@ -12,15 +12,15 @@ type UserFavoriteListResponse struct {
 	FavoriteMovieIDs []pgtype.UUID `json:"favorite_user_ids"`
 }
 
-type FavoriteGetRequest struct {
-	UserID  pgtype.UUID `json:"user_id"`
-	MovieID pgtype.UUID `json:"movie_id"`
-}
-
 type FavoriteCreateRequest struct {
 	MovieID pgtype.UUID `json:"movie_id"`
 }
 
 type FavoriteDeleteRequest struct {
+	UserID  pgtype.UUID `json:"user_id"`
+	MovieID pgtype.UUID `json:"movie_id"`
+}
+
+type MyFavoriteDeleteRequest struct {
 	MovieID pgtype.UUID `json:"movie_id"`
 }

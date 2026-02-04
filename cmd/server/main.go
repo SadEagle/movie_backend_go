@@ -69,11 +69,16 @@ func main() {
 
 	// User
 	r.Get("/user/{user_id}", handlerObj.GetUserHandler)
+	r.Get("/user/me", handlerObj.GetUserHandler)
 	r.Get("/user", handlerObj.GetUserListHandler)
-	r.Post("/user/me", handlerObj.CreateUserHandler)
+	r.Post("/user", handlerObj.CreateUserHandler)
 	r.With(auth.TokenExtractionMiddleware).Patch("/user/", handlerObj.UpdateUserHandler)
 	r.With(auth.TokenExtractionMiddleware).Delete("/user/me", handlerObj.MyselfDeleteUserHandler)
 	r.Delete("/user/{user_id}", handlerObj.AdminDeleteUserHandler)
+
+	r.With(auth.TokenExtractionMiddleware).Get("/user/my/rating", handlerObj.GetMyUserRatingListHandler)
+	r.With(auth.TokenExtractionMiddleware).Get("/user/my/rating", handlerObj.GetMyUserRatingListHandler)
+	r.With(auth.TokenExtractionMiddleware).Get("/user/my/favorite", handlerObj.GetMyUserFavoriteListHandler)
 
 	r.Get("/user/{user_id}/comment", handlerObj.GetUserCommentListHandler)
 	r.Get("/user/{user_id}/rating", handlerObj.GetUserRatingListHandler)
@@ -83,8 +88,8 @@ func main() {
 	r.Get("/movie", handlerObj.GetMovieListHandler)
 	r.Get("/movie/{movie_id}", handlerObj.GetMovieHandler)
 	r.With(auth.TokenExtractionMiddleware).Post("/movie", handlerObj.CreateMovieHandler)
-	r.With(auth.TokenExtractionMiddleware).Patch("/movie/{movie_id}", handlerObj.UpdateCommentHandler)
-	r.With(auth.TokenExtractionMiddleware).Delete("/movie/{movie_id}", handlerObj.DeleteCommentHandler)
+	r.With(auth.TokenExtractionMiddleware).Patch("/movie/{movie_id}", handlerObj.UpdateMovieHandler)
+	r.With(auth.TokenExtractionMiddleware).Delete("/movie/{movie_id}", handlerObj.DeleteMovieHandler)
 
 	r.Get("/movie/{movie_id}/comment", handlerObj.GetMovieCommentListHandler)
 	r.Get("/movie/{movie_id}/rating", handlerObj.GetMovieRatingListHandler)
@@ -93,7 +98,7 @@ func main() {
 	// Comment
 	r.Get("/comment", handlerObj.GetCommentHandler)
 	r.With(auth.TokenExtractionMiddleware).Post("/comment", handlerObj.CreateCommentHandler)
-	r.With(auth.TokenExtractionMiddleware).Patch("/comment", handlerObj.UpdateRatingHandler)
+	r.With(auth.TokenExtractionMiddleware).Patch("/comment", handlerObj.UpdateCommentHandler)
 	r.With(auth.TokenExtractionMiddleware).Delete("/comment", handlerObj.DeleteRatingHandler)
 
 	// Rating
@@ -101,11 +106,13 @@ func main() {
 	r.With(auth.TokenExtractionMiddleware).Post("/rating", handlerObj.CreateRatingHandler)
 	r.With(auth.TokenExtractionMiddleware).Patch("/rating", handlerObj.UpdateRatingHandler)
 	r.With(auth.TokenExtractionMiddleware).Delete("/rating", handlerObj.DeleteRatingHandler)
+	r.With(auth.TokenExtractionMiddleware).Delete("/rating/my", handlerObj.DeleteMyRatingHandler)
 
 	// Favorite
 	r.Get("/favorite", handlerObj.GetFavoriteHandler)
 	r.With(auth.TokenExtractionMiddleware).Post("/favorite", handlerObj.CreateFavoriteHandler)
 	r.With(auth.TokenExtractionMiddleware).Delete("/favorite", handlerObj.DeleteFavoriteHandler)
+	r.With(auth.TokenExtractionMiddleware).Delete("/favorite/my", handlerObj.DeleteMyFavoriteHandler)
 
 	// healthcheck
 	r.Get("/healthcheck", handlers.CheckHealthHandlerCreate(dbPool))
