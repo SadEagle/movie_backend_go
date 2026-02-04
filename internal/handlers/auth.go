@@ -50,7 +50,7 @@ func (ho *HandlerObj) LoginHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !bytes.Equal(encode.EncodePassword(passwordStr), user.EncodedPassword) {
-		ho.Logger.Printf("Wrong password")
+		ho.Logger.Println("Wrong password")
 		http.Error(rw, "Incorrect login or password", http.StatusBadRequest)
 		return
 	}
