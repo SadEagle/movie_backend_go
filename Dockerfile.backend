@@ -6,6 +6,7 @@ COPY ./docs ./docs/
 COPY ./db ./db/
 COPY ./cmd ./cmd/
 COPY ./internal ./internal/
+COPY ./pkg ./pkg/
 RUN go build -o /server ./cmd/server/
 
 

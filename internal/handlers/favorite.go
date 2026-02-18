@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"movie_backend_go/db/sqlc"
-	"movie_backend_go/internal/auth"
 	"movie_backend_go/internal/crudl"
 	"movie_backend_go/internal/handlers/reqmodel"
+	"movie_backend_go/pkg/auth"
 )
 
 // @Summary      Get user favorite list

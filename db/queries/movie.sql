@@ -1,5 +1,5 @@
 -- name: GetMovie :one
-SELECT id, title, COALESCE(amount_rates, 0), COALESCE(rating, 0), created_at
+SELECT id, title, movie_path, COALESCE(amount_rates, 0) amount_rates, COALESCE(rating, 0) rating, created_at
 FROM (
   select * from movie where id = $1
   ) m
@@ -8,7 +8,7 @@ LEFT JOIN (
 ) mrv ON m.id = mrv.movie_id;
 
 -- name: GetMovieByTitle :one
-SELECT id, title, COALESCE(amount_rates, 0), COALESCE(rating, 0), created_at
+SELECT id, title, movie_path, COALESCE(amount_rates, 0) amount_rates, COALESCE(rating, 0) rating, created_at
 FROM (
   select * from movie where title = $1
   ) m
@@ -22,6 +22,11 @@ FROM movie;
 INSERT INTO movie(title)
 VALUES ($1)
 RETURNING *;
+
+-- name: AddMoviePath :execrows
+UPDATE movie
+SET movie_path = $1
+WHERE id = $2;
 
 -- name: UpdateMovie :one
 UPDATE movie SET

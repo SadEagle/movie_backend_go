@@ -3,3 +3,4 @@ Dockerfile
 env
 .env
 README.md
+**/*.mp4

@@ -25,6 +25,7 @@ type Movie struct {
 	ID        pgtype.UUID      `json:"id"`
 	Title     string           `json:"title"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
+	MoviePath *string          `json:"movie_path"`
 }
 
 type Rating struct {

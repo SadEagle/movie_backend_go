@@ -14,7 +14,8 @@ services:
       - DB_USER=${DB_USER}
       - DB_PORT=${DB_PORT}
       - DB_PASSWORD_FILE=/run/secrets/db_passwd_secret
-
+    volumes:
+      - movie-volume:/movie-data
     depends_on:
       dev-db:
         condition: service_healthy
@@ -58,6 +59,7 @@ networks:
   dev-db-network:
 
 volumes:
+  movie-volume:
   dev-db-volume:
 
 secrets:

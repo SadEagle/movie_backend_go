@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"movie_backend_go/db/sqlc"
-	"movie_backend_go/internal/auth"
 	"movie_backend_go/internal/crudl"
 	"movie_backend_go/internal/handlers/reqmodel"
+	"movie_backend_go/pkg/auth"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -75,7 +75,7 @@ func (ho *HandlerObj) GetMovieHandler(rw http.ResponseWriter, r *http.Request) {
 // @Tags         movie, admin
 // @Accept       json
 // @Produce      json
-// @Security	 	 OAuth2Password
+// @Security	 OAuth2Password
 // @Param        movie_id   path      string  true  "Movie ID"
 // @Param        request 		body	reqmodel.MovieUpdateRequest  true  "Movie creation data"
 // @Success      200  {object}  sqlc.Movie
@@ -132,7 +132,7 @@ func (ho *HandlerObj) UpdateMovieHandler(rw http.ResponseWriter, r *http.Request
 // @Tags         movie, admin
 // @Accept       json
 // @Produce      json
-// @Security	 	 OAuth2Password
+// @Security	 OAuth2Password
 // @Param        request 		body	reqmodel.MovieCreateRequest  true  "Movie creation data"
 // @Success      201  {object}  sqlc.Movie
 // @Failure      401  {object}  map[string]string
@@ -182,12 +182,12 @@ func (ho *HandlerObj) CreateMovieHandler(rw http.ResponseWriter, r *http.Request
 // @Tags         movie, admin
 // @Accept       json
 // @Produce      json
-// @Security	 	 OAuth2Password
+// @Security	 OAuth2Password
 // @Param        movie_id   path      string  true  "Movie ID"
 // @Success      204
 // @Failure      401 	{object}  map[string]string
-// @Failure      404  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
+// @Failure      404  	{object}  map[string]string
+// @Failure      500  	{object}  map[string]string
 // @Router       /movie/{movie_id} [delete]
 func (ho *HandlerObj) DeleteMovieHandler(rw http.ResponseWriter, r *http.Request) {
 	ctx, close := context.WithTimeout(r.Context(), OpTimeContext)

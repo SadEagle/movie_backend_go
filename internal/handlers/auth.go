@@ -3,9 +3,9 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"movie_backend_go/internal/auth"
 	"movie_backend_go/internal/crudl"
 	"movie_backend_go/internal/encode"
+	"movie_backend_go/pkg/auth"
 	"net/http"
 	"time"
 

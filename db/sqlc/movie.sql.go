@@ -11,16 +11,40 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addMoviePath = `-- name: AddMoviePath :execrows
+UPDATE movie
+SET movie_path = $1
+WHERE id = $2
+`
+
+type AddMoviePathParams struct {
+	MoviePath *string     `json:"movie_path"`
+	ID        pgtype.UUID `json:"id"`
+}
+
+func (q *Queries) AddMoviePath(ctx context.Context, arg AddMoviePathParams) (int64, error) {
+	result, err := q.db.Exec(ctx, addMoviePath, arg.MoviePath, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const createMovie = `-- name: CreateMovie :one
 INSERT INTO movie(title)
 VALUES ($1)
-RETURNING id, title, created_at
+RETURNING id, title, created_at, movie_path
 `
 
 func (q *Queries) CreateMovie(ctx context.Context, title string) (Movie, error) {
 	row := q.db.QueryRow(ctx, createMovie, title)
 	var i Movie
-	err := row.Scan(&i.ID, &i.Title, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.CreatedAt,
+		&i.MoviePath,
+	)
 	return i, err
 }
 
@@ -38,9 +62,9 @@ func (q *Queries) DeleteMovie(ctx context.Context, id pgtype.UUID) (int64, error
 }
 
 const getMovie = `-- name: GetMovie :one
-SELECT id, title, COALESCE(amount_rates, 0), COALESCE(rating, 0), created_at
+SELECT id, title, movie_path, COALESCE(amount_rates, 0) amount_rates, COALESCE(rating, 0) rating, created_at
 FROM (
-  select id, title, created_at from movie where id = $1
+  select id, title, created_at, movie_path from movie where id = $1
   ) m
 LEFT JOIN ( 
   select movie_id, amount_rates, rating from total_rating_mview where movie_id = $1
@@ -50,6 +74,7 @@ LEFT JOIN (
 type GetMovieRow struct {
 	ID          pgtype.UUID      `json:"id"`
 	Title       string           `json:"title"`
+	MoviePath   *string          `json:"movie_path"`
 	AmountRates int64            `json:"amount_rates"`
 	Rating      float64          `json:"rating"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
@@ -61,6 +86,7 @@ func (q *Queries) GetMovie(ctx context.Context, id pgtype.UUID) (GetMovieRow, er
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
+		&i.MoviePath,
 		&i.AmountRates,
 		&i.Rating,
 		&i.CreatedAt,
@@ -69,9 +95,9 @@ func (q *Queries) GetMovie(ctx context.Context, id pgtype.UUID) (GetMovieRow, er
 }
 
 const getMovieByTitle = `-- name: GetMovieByTitle :one
-SELECT id, title, COALESCE(amount_rates, 0), COALESCE(rating, 0), created_at
+SELECT id, title, movie_path, COALESCE(amount_rates, 0) amount_rates, COALESCE(rating, 0) rating, created_at
 FROM (
-  select id, title, created_at from movie where title = $1
+  select id, title, created_at, movie_path from movie where title = $1
   ) m
 LEFT JOIN total_rating_mview ON m.id = mrv.movie_id
 `
@@ -79,6 +105,7 @@ LEFT JOIN total_rating_mview ON m.id = mrv.movie_id
 type GetMovieByTitleRow struct {
 	ID          pgtype.UUID      `json:"id"`
 	Title       string           `json:"title"`
+	MoviePath   *string          `json:"movie_path"`
 	AmountRates int64            `json:"amount_rates"`
 	Rating      float64          `json:"rating"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
@@ -90,6 +117,7 @@ func (q *Queries) GetMovieByTitle(ctx context.Context, title string) (GetMovieBy
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
+		&i.MoviePath,
 		&i.AmountRates,
 		&i.Rating,
 		&i.CreatedAt,
@@ -98,7 +126,7 @@ func (q *Queries) GetMovieByTitle(ctx context.Context, title string) (GetMovieBy
 }
 
 const getMovieList = `-- name: GetMovieList :many
-SELECT id, title, created_at
+SELECT id, title, created_at, movie_path
 FROM movie
 `
 
@@ -111,7 +139,12 @@ func (q *Queries) GetMovieList(ctx context.Context) ([]Movie, error) {
 	var items []Movie
 	for rows.Next() {
 		var i Movie
-		if err := rows.Scan(&i.ID, &i.Title, &i.CreatedAt); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.CreatedAt,
+			&i.MoviePath,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -126,7 +159,7 @@ const updateMovie = `-- name: UpdateMovie :one
 UPDATE movie SET
   title = COALESCE($2, title)
 WHERE id = $1
-RETURNING id, title, created_at
+RETURNING id, title, created_at, movie_path
 `
 
 type UpdateMovieParams struct {
@@ -137,6 +170,11 @@ type UpdateMovieParams struct {
 func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie, error) {
 	row := q.db.QueryRow(ctx, updateMovie, arg.ID, arg.Title)
 	var i Movie
-	err := row.Scan(&i.ID, &i.Title, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.CreatedAt,
+		&i.MoviePath,
+	)
 	return i, err
 }

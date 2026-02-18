@@ -259,6 +259,8 @@ definitions:
         $ref: '#/definitions/pgtype.Timestamp'
       id:
         type: string
+      movie_path:
+        type: string
       title:
         type: string
     type: object
@@ -1112,6 +1114,87 @@ paths:
       tags:
       - rating
       - user
+  /stream/movie/{movie_id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: string
+      - description: Byte range
+        in: header
+        name: Range
+        type: string
+      produces:
+      - video/mp4
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              format: int32
+              type: integer
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Stream movie
+      tags:
+      - video-manager
+  /upload/movie/{movie_id}:
+    post:
+      consumes:
+      - application/octet-stream
+      description: Upload movie data as []bytes stream
+      parameters:
+      - description: Movie ID
+        in: path
+        name: movie_id
+        required: true
+        type: string
+      - description: Streaming Bytes
+        in: body
+        name: tequest
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - OAuth2Password: []
+      summary: Upload movie
+      tags:
+      - video-manager
+      - admin
   /user:
     get:
       consumes:

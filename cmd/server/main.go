@@ -6,9 +6,9 @@ import (
 	"movie_backend_go/db"
 	"movie_backend_go/db/sqlc"
 	_ "movie_backend_go/docs"
-	"movie_backend_go/internal/auth"
 	"movie_backend_go/internal/handlers"
 	"movie_backend_go/internal/scheduler"
+	"movie_backend_go/pkg/auth"
 	"net/http"
 	"os"
 	"strconv"
@@ -64,6 +64,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
+	// TODO: enhance middleware to check access roles instead of ordinary tokens?!?!
 	// Auth
 	r.Post("/auth/login", handlerObj.LoginHandler)
 
@@ -113,6 +114,10 @@ func main() {
 	r.With(auth.TokenExtractionMiddleware).Post("/favorite", handlerObj.CreateFavoriteHandler)
 	r.With(auth.TokenExtractionMiddleware).Delete("/favorite", handlerObj.DeleteFavoriteHandler)
 	r.With(auth.TokenExtractionMiddleware).Delete("/favorite/my", handlerObj.DeleteMyFavoriteHandler)
+
+	// Video Handler
+	r.With(auth.TokenExtractionMiddleware).Post("/upload/movie/{movie_id}", handlerObj.UploadMovie)
+	r.Get("/stream/movie/{movie_id}", handlerObj.StreamMovie)
 
 	// healthcheck
 	r.Get("/healthcheck", handlers.CheckHealthHandlerCreate(dbPool))

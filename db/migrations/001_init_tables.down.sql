@@ -1,8 +1,8 @@
-DROP TABLE IF EXISTS user_data CASCADE;
-DROP TABLE IF EXISTS movie CASCADE;
-DROP TABLE IF EXISTS favorite;
-DROP TABLE IF EXISTS rating;
-DROP TABLE IF EXISTS comment;
+DROP MATERIALIZED VIEW total_rating_mview;
+DROP INDEX total_rating_mview_index;
 
-DROP MATERIALIZED VIEW IF EXISTS total_rating_mview;
-DROP INDEX IF EXISTS total_rating_mview_index;
+DROP TABLE user_data CASCADE;
+DROP TABLE movie CASCADE;
+DROP TABLE favorite;
+DROP TABLE rating;
+DROP TABLE comment;

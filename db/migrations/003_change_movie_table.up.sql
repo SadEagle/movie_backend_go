@@ -1,0 +1,2 @@
+ALTER TABLE movie
+ADD COLUMN movie_path VARCHAR;

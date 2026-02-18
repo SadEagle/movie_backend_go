@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	AddMoviePath(ctx context.Context, arg AddMoviePathParams) (int64, error)
 	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
 	CreateFavorite(ctx context.Context, arg CreateFavoriteParams) (Favorite, error)
 	CreateMovie(ctx context.Context, title string) (Movie, error)
